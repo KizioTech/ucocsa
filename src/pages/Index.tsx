@@ -6,6 +6,7 @@ import Layout from "@/components/Layout";
 import CountdownTimer from "@/components/CountdownTimer";
 import SectionHeading from "@/components/SectionHeading";
 import { supabase } from "@/integrations/supabase/client";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const quickLinks = [
