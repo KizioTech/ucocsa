@@ -21,6 +21,8 @@ import AdminPrayers from "./pages/admin/AdminPrayers.tsx";
 import AdminMembers from "./pages/admin/AdminMembers.tsx";
 import AdminBlog from "./pages/admin/AdminBlog.tsx";
 import AdminAnnouncements from "./pages/admin/AdminAnnouncements.tsx";
+import AdminGallery from "./pages/admin/AdminGallery.tsx";
+import Gallery from "./pages/Gallery.tsx";
 import Profile from "./pages/Profile.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Messages from "./pages/Messages.tsx";
@@ -46,6 +48,7 @@ const App = () => (
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/give" element={<Give />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="/join" element={<Join />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
@@ -57,6 +60,7 @@ const App = () => (
             <Route path="/admin/members" element={<ProtectedRoute><AdminMembers /></ProtectedRoute>} />
             <Route path="/admin/blog" element={<ProtectedRoute><AdminBlog /></ProtectedRoute>} />
             <Route path="/admin/announcements" element={<ProtectedRoute><AdminAnnouncements /></ProtectedRoute>} />
+            <Route path="/admin/gallery" element={<ProtectedRoute><AdminGallery /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

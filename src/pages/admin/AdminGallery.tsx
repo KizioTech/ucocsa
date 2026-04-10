@@ -58,7 +58,8 @@ const AdminGallery = () => {
   });
 
   const toggleAlbumField = async (id: string, field: "is_published" | "is_highlighted", value: boolean) => {
-    const { error } = await supabase.from("gallery_albums").update({ [field]: !value }).eq("id", id);
+    const updateData = field === "is_published" ? { is_published: !value } : { is_highlighted: !value };
+    const { error } = await supabase.from("gallery_albums").update(updateData).eq("id", id);
     if (error) { toast.error(error.message); return; }
     queryClient.invalidateQueries({ queryKey: ["admin-gallery-albums"] });
   };
@@ -118,7 +119,7 @@ const AdminGallery = () => {
                     <img src={photo.image_url} alt={photo.caption || "Pending"} className="aspect-square object-cover w-full" />
                     {photo.caption && <p className="text-xs p-2 truncate text-muted-foreground">{photo.caption}</p>}
                     <div className="flex">
-                      <button onClick={() => approvePhoto(photo.id)} className="flex-1 py-2 bg-green-600 text-white text-xs flex items-center justify-center gap-1 hover:bg-green-700">
+                      <button onClick={() => approvePhoto(photo.id)} className="flex-1 py-2 bg-primary text-primary-foreground text-xs flex items-center justify-center gap-1 hover:bg-primary/90">
                         <Check size={14} /> Approve
                       </button>
                       <button onClick={() => rejectPhoto(photo.id)} className="flex-1 py-2 bg-destructive text-destructive-foreground text-xs flex items-center justify-center gap-1 hover:bg-destructive/90">
