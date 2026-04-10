@@ -69,6 +69,24 @@ const Index = () => {
     },
   });
 
+  // Gallery highlights
+  const { data: highlightedAlbums } = useQuery({
+    queryKey: ["homepage-gallery-highlights"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("gallery_albums")
+        .select("*, gallery_photos(id, image_url, caption)")
+        .eq("is_highlighted", true)
+        .eq("is_published", true);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const highlightPhotos = highlightedAlbums?.flatMap(
+    (album) => (album.gallery_photos as any[])?.map((p: any) => ({ ...p, albumTitle: album.title })) ?? []
+  ) ?? [];
+
   const latestAnnouncement = announcements?.[0];
 
   return (
