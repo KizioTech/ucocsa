@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 97%;
+    --foreground: 150 30% 10%;
+
+    --card: 40 30% 95%;
+    --card-foreground: 150 30% 10%;
+
+    --popover: 40 33% 97%;
+    --popover-foreground: 150 30% 10%;
+
+    --primary: 40 55% 55%;
+    --primary-foreground: 40 33% 97%;
+
+    --secondary: 153 40% 18%;
+    --secondary-foreground: 40 33% 97%;
+
+    --muted: 40 20% 92%;
+    --muted-foreground: 150 10% 40%;
+
+    --accent: 153 40% 18%;
+    --accent-foreground: 40 33% 97%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 20% 88%;
+    --input: 40 20% 88%;
+    --ring: 40 55% 55%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 153 40% 12%;
+    --sidebar-foreground: 40 33% 97%;
+    --sidebar-primary: 40 55% 55%;
+    --sidebar-primary-foreground: 40 33% 97%;
+    --sidebar-accent: 153 35% 22%;
+    --sidebar-accent-foreground: 40 33% 97%;
+    --sidebar-border: 153 30% 20%;
+    --sidebar-ring: 40 55% 55%;
+
+    /* Custom tokens */
+    --gold: 40 55% 55%;
+    --gold-light: 40 60% 75%;
+    --gold-dark: 40 50% 40%;
+    --forest: 153 40% 18%;
+    --forest-deep: 153 45% 10%;
+    --cream: 40 33% 97%;
+    --cream-dark: 40 25% 90%;
+    --warm-white: 40 40% 99%;
+
+    --font-heading: 'DM Serif Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  .dark {
+    --background: 153 45% 6%;
+    --foreground: 40 30% 95%;
+    --card: 153 40% 10%;
+    --card-foreground: 40 30% 95%;
+    --popover: 153 45% 6%;
+    --popover-foreground: 40 30% 95%;
+    --primary: 40 55% 55%;
+    --primary-foreground: 153 45% 6%;
+    --secondary: 40 30% 85%;
+    --secondary-foreground: 153 45% 6%;
+    --muted: 153 30% 15%;
+    --muted-foreground: 40 15% 60%;
+    --accent: 40 55% 55%;
+    --accent-foreground: 153 45% 6%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 153 25% 18%;
+    --input: 153 25% 18%;
+    --ring: 40 55% 55%;
+    --sidebar-background: 153 45% 6%;
+    --sidebar-foreground: 40 30% 95%;
+    --sidebar-primary: 40 55% 55%;
+    --sidebar-primary-foreground: 153 45% 6%;
+    --sidebar-accent: 153 35% 12%;
+    --sidebar-accent-foreground: 40 30% 95%;
+    --sidebar-border: 153 25% 18%;
+    --sidebar-ring: 40 55% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+  }
+}
+
+@layer utilities {
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 100%);
+  }
+}
