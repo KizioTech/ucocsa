@@ -5,6 +5,7 @@ import {
   Users,
   FileText,
   Megaphone,
+  Image,
   LogOut,
   Home,
 } from "lucide-react";
@@ -31,6 +32,7 @@ const items = [
   { title: "Members", url: "/admin/members", icon: Users },
   { title: "Blog", url: "/admin/blog", icon: FileText },
   { title: "Announcements", url: "/admin/announcements", icon: Megaphone },
+  { title: "Gallery", url: "/admin/gallery", icon: Image },
 ];
 
 export function AdminSidebar() {

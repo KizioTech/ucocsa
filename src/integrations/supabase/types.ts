@@ -251,6 +251,80 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_albums: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_highlighted: boolean
+          is_published: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_highlighted?: boolean
+          is_published?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_highlighted?: boolean
+          is_published?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gallery_photos: {
+        Row: {
+          album_id: string
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          is_approved: boolean
+          uploaded_by: string | null
+        }
+        Insert: {
+          album_id: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          is_approved?: boolean
+          uploaded_by?: string | null
+        }
+        Update: {
+          album_id?: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_approved?: boolean
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_photos_album_id_fkey"
+            columns: ["album_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_albums"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       members: {
         Row: {
           created_at: string
