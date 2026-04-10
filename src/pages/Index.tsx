@@ -135,6 +135,41 @@ const Index = () => {
         </div>
       )}
 
+      {/* Gallery Highlights Carousel */}
+      {highlightPhotos.length > 0 && (
+        <section className="py-12 bg-muted/30">
+          <div className="container">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl md:text-2xl font-heading text-foreground">✨ Gallery Highlights</h2>
+              <Link to="/gallery" className="inline-flex items-center gap-1 text-sm text-primary font-medium hover:underline">
+                View Gallery <ArrowRight size={14} />
+              </Link>
+            </div>
+            <Carousel opts={{ loop: true, align: "start" }} className="w-full">
+              <CarouselContent className="-ml-3">
+                {highlightPhotos.map((photo) => (
+                  <CarouselItem key={photo.id} className="pl-3 basis-4/5 sm:basis-1/2 md:basis-1/3">
+                    <div className="relative aspect-[4/3] rounded-xl overflow-hidden group">
+                      <img
+                        src={photo.image_url}
+                        alt={photo.caption || "Gallery highlight"}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                        <p className="text-xs text-white/90">{photo.caption || photo.albumTitle}</p>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="-left-3 md:-left-5" />
+              <CarouselNext className="-right-3 md:-right-5" />
+            </Carousel>
+          </div>
+        </section>
+      )}
+
       {/* Quick Links */}
       <section className="py-16">
         <div className="container">
