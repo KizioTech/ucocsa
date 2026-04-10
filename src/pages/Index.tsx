@@ -7,6 +7,7 @@ import CountdownTimer from "@/components/CountdownTimer";
 import SectionHeading from "@/components/SectionHeading";
 import { supabase } from "@/integrations/supabase/client";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const quickLinks = [
@@ -145,7 +146,7 @@ const Index = () => {
                 View Gallery <ArrowRight size={14} />
               </Link>
             </div>
-            <Carousel opts={{ loop: true, align: "start" }} className="w-full">
+            <Carousel opts={{ loop: true, align: "start" }} plugins={[Autoplay({ delay: 4000, stopOnInteraction: false })]} className="w-full">
               <CarouselContent className="-ml-3">
                 {highlightPhotos.map((photo) => (
                   <CarouselItem key={photo.id} className="pl-3 basis-4/5 sm:basis-1/2 md:basis-1/3">
