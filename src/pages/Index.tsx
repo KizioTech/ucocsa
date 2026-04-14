@@ -141,7 +141,7 @@ const Index = () => {
             {upcomingPrograms && upcomingPrograms.length > 0 && (
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
                 {upcomingPrograms.map((prog) => (
-                  <div key={prog.id} className="bg-cream/10 backdrop-blur border border-cream/20 rounded-xl px-5 py-3 text-left max-w-xs">
+                  <Link key={prog.id} to="/events" className="bg-cream/10 backdrop-blur border border-cream/20 rounded-xl px-5 py-3 text-left max-w-xs hover:bg-cream/20 transition-colors">
                     <div className="flex items-center gap-2 mb-1">
                       <Church size={14} className="text-gold-light" />
                       <span className="text-xs font-medium text-gold-light uppercase tracking-wider">
@@ -155,7 +155,7 @@ const Index = () => {
                       {new Date(prog.service_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
                       {prog.theme && <> · {prog.theme}</>}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
