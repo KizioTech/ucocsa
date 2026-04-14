@@ -22,6 +22,7 @@ import AdminMembers from "./pages/admin/AdminMembers.tsx";
 import AdminBlog from "./pages/admin/AdminBlog.tsx";
 import AdminAnnouncements from "./pages/admin/AdminAnnouncements.tsx";
 import AdminGallery from "./pages/admin/AdminGallery.tsx";
+import AdminPrograms from "./pages/admin/AdminPrograms.tsx";
 import Gallery from "./pages/Gallery.tsx";
 import Profile from "./pages/Profile.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
