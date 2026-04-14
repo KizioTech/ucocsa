@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import ScrollToTop from "@/components/ScrollToTop";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +23,7 @@ import AdminMembers from "./pages/admin/AdminMembers.tsx";
 import AdminBlog from "./pages/admin/AdminBlog.tsx";
 import AdminAnnouncements from "./pages/admin/AdminAnnouncements.tsx";
 import AdminGallery from "./pages/admin/AdminGallery.tsx";
+import AdminPrograms from "./pages/admin/AdminPrograms.tsx";
 import Gallery from "./pages/Gallery.tsx";
 import Profile from "./pages/Profile.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
@@ -38,6 +40,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
@@ -61,6 +64,7 @@ const App = () => (
             <Route path="/admin/blog" element={<ProtectedRoute><AdminBlog /></ProtectedRoute>} />
             <Route path="/admin/announcements" element={<ProtectedRoute><AdminAnnouncements /></ProtectedRoute>} />
             <Route path="/admin/gallery" element={<ProtectedRoute><AdminGallery /></ProtectedRoute>} />
+            <Route path="/admin/programs" element={<ProtectedRoute><AdminPrograms /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
