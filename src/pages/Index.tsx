@@ -136,6 +136,29 @@ const Index = () => {
             </div>
 
             <CountdownTimer />
+
+            {/* Upcoming Service Program Summary */}
+            {upcomingPrograms && upcomingPrograms.length > 0 && (
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+                {upcomingPrograms.map((prog) => (
+                  <div key={prog.id} className="bg-cream/10 backdrop-blur border border-cream/20 rounded-xl px-5 py-3 text-left max-w-xs">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Church size={14} className="text-gold-light" />
+                      <span className="text-xs font-medium text-gold-light uppercase tracking-wider">
+                        {prog.service_type === "sunday" ? "Sunday Service" : "MidWeek Service"}
+                      </span>
+                    </div>
+                    <p className="text-cream text-sm font-semibold">
+                      {prog.title || (prog.service_type === "sunday" ? "Sunday Gathering" : "MidWeek Fellowship")}
+                    </p>
+                    <p className="text-cream/60 text-xs mt-1">
+                      {new Date(prog.service_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                      {prog.theme && <> · {prog.theme}</>}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </motion.div>
         </div>
       </section>
