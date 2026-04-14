@@ -118,10 +118,7 @@ const Index = () => {
               </Link>
             </div>
 
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-cream/60 text-sm uppercase tracking-wider">Next Fellowship In</p>
-              <CountdownTimer />
-            </div>
+            <CountdownTimer />
           </motion.div>
         </div>
       </section>
