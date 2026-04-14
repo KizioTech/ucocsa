@@ -547,6 +547,78 @@ export type Database = {
         }
         Relationships: []
       }
+      service_programs: {
+        Row: {
+          alter_call: string | null
+          announcements: string | null
+          bearers: string[] | null
+          convener: string | null
+          created_at: string
+          created_by: string | null
+          facilitator: string | null
+          first_prayer: string | null
+          holy_communion: string | null
+          id: string
+          is_modified: boolean
+          is_published: boolean
+          last_prayer: string | null
+          leading_verses: string | null
+          preaching: string | null
+          service_date: string
+          service_type: string
+          teaching: string | null
+          theme: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          alter_call?: string | null
+          announcements?: string | null
+          bearers?: string[] | null
+          convener?: string | null
+          created_at?: string
+          created_by?: string | null
+          facilitator?: string | null
+          first_prayer?: string | null
+          holy_communion?: string | null
+          id?: string
+          is_modified?: boolean
+          is_published?: boolean
+          last_prayer?: string | null
+          leading_verses?: string | null
+          preaching?: string | null
+          service_date: string
+          service_type?: string
+          teaching?: string | null
+          theme?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alter_call?: string | null
+          announcements?: string | null
+          bearers?: string[] | null
+          convener?: string | null
+          created_at?: string
+          created_by?: string | null
+          facilitator?: string | null
+          first_prayer?: string | null
+          holy_communion?: string | null
+          id?: string
+          is_modified?: boolean
+          is_published?: boolean
+          last_prayer?: string | null
+          leading_verses?: string | null
+          preaching?: string | null
+          service_date?: string
+          service_type?: string
+          teaching?: string | null
+          theme?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
