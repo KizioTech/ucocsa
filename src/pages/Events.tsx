@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Calendar as CalIcon, MapPin, Clock, Share2, Church, BookOpen } from "lucide-react";
+import { Calendar as CalIcon, MapPin, Clock, Share2, Church, BookOpen, User } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";

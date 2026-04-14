@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, HandHeart, BookOpen, Users, Music, ArrowRight, Image, Church } from "lucide-react";
+import { Calendar, HandHeart, BookOpen, Users, Music, ArrowRight, Image, Church, Megaphone, CalendarDays, Clock, MapPin } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import CountdownTimer from "@/components/CountdownTimer";
