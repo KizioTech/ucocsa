@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, HandHeart, BookOpen, Users, Music, ArrowRight, Image } from "lucide-react";
+import { Calendar, HandHeart, BookOpen, Users, Music, ArrowRight, Image, Church } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import CountdownTimer from "@/components/CountdownTimer";
@@ -84,6 +84,23 @@ const Index = () => {
     },
   });
 
+  // Upcoming service programs
+  const { data: upcomingPrograms } = useQuery({
+    queryKey: ["homepage-programs"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("service_programs")
+        .select("*")
+        .eq("is_published", true)
+        .gte("service_date", today)
+        .order("service_date", { ascending: true })
+        .limit(2);
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const highlightPhotos = highlightedAlbums?.flatMap(
     (album) => (album.gallery_photos as any[])?.map((p: any) => ({ ...p, albumTitle: album.title })) ?? []
   ) ?? [];
@@ -119,6 +136,29 @@ const Index = () => {
             </div>
 
             <CountdownTimer />
+
+            {/* Upcoming Service Program Summary */}
+            {upcomingPrograms && upcomingPrograms.length > 0 && (
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+                {upcomingPrograms.map((prog) => (
+                  <div key={prog.id} className="bg-cream/10 backdrop-blur border border-cream/20 rounded-xl px-5 py-3 text-left max-w-xs">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Church size={14} className="text-gold-light" />
+                      <span className="text-xs font-medium text-gold-light uppercase tracking-wider">
+                        {prog.service_type === "sunday" ? "Sunday Service" : "MidWeek Service"}
+                      </span>
+                    </div>
+                    <p className="text-cream text-sm font-semibold">
+                      {prog.title || (prog.service_type === "sunday" ? "Sunday Gathering" : "MidWeek Fellowship")}
+                    </p>
+                    <p className="text-cream/60 text-xs mt-1">
+                      {new Date(prog.service_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                      {prog.theme && <> · {prog.theme}</>}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </motion.div>
         </div>
       </section>

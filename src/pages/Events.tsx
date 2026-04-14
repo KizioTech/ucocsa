@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Calendar as CalIcon, MapPin, Clock, Share2 } from "lucide-react";
+import { Calendar as CalIcon, MapPin, Clock, Share2, Church, BookOpen } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
-import SectionHeading from "@/components/SectionHeading";
 import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 
 type EventType = "Fellowship" | "Bible Study" | "Outreach" | "Special Service" | "Social" | "Other";
 
@@ -13,37 +14,79 @@ const typeColors: Record<string, string> = {
   Outreach: "bg-green-100 text-green-700",
   "Special Service": "bg-purple-100 text-purple-700",
   Social: "bg-orange-100 text-orange-700",
+  "MidWeek Service": "bg-amber-100 text-amber-700",
+  "Sunday Service": "bg-indigo-100 text-indigo-700",
   Other: "bg-muted text-muted-foreground",
 };
 
 const Events = () => {
   const [filter, setFilter] = useState<string>("All");
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const types = ["All", "Fellowship", "Bible Study", "Outreach", "Special Service", "Social", "Other"];
+  const types = ["All", "Fellowship", "Bible Study", "Outreach", "Special Service", "Social", "MidWeek Service", "Sunday Service", "Other"];
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      const { data } = await supabase
+  // Fetch regular events
+  const { data: dbEvents, isLoading: eventsLoading } = useQuery({
+    queryKey: ["events-page"],
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from("events")
         .select("*")
         .order("event_date", { ascending: true });
-      if (data) setEvents(data);
-      setLoading(false);
-    };
-    fetchEvents();
-  }, []);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
-  const filtered = filter === "All" ? events : events.filter((e) => e.event_type === filter);
+  // Fetch upcoming service programs (fixed events)
+  const { data: programs, isLoading: programsLoading } = useQuery({
+    queryKey: ["events-page-programs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("service_programs")
+        .select("*")
+        .eq("is_published", true)
+        .gte("service_date", new Date().toISOString().split("T")[0])
+        .order("service_date", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr + "T00:00:00").toLocaleDateString("en-MW", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+  // Merge fixed services into events list
+  const allEvents = useMemo(() => {
+    const regular = (dbEvents ?? []).map((e) => ({
+      id: e.id,
+      title: e.title,
+      description: e.description,
+      event_date: e.event_date,
+      event_time: e.event_time,
+      location: e.location,
+      event_type: e.event_type,
+      is_fixed: false,
+      program: null as any,
+    }));
+
+    const fixed = (programs ?? []).map((p) => ({
+      id: `program-${p.id}`,
+      title: p.title || (p.service_type === "sunday" ? "Sunday Gathering" : "MidWeek Fellowship"),
+      description: p.theme ? `Theme: ${p.theme}` : (p.leading_verses ? `Scripture: ${p.leading_verses}` : null),
+      event_date: p.service_date,
+      event_time: p.service_type === "sunday" ? "08:00" : "18:00",
+      location: null,
+      event_type: p.service_type === "sunday" ? "Sunday Service" : "MidWeek Service",
+      is_fixed: true,
+      program: p,
+    }));
+
+    return [...regular, ...fixed].sort((a, b) => a.event_date.localeCompare(b.event_date));
+  }, [dbEvents, programs]);
+
+  const filtered = filter === "All" ? allEvents : allEvents.filter((e) => e.event_type === filter);
+  const loading = eventsLoading || programsLoading;
+
+  const formatDate = (dateStr: string) =>
+    new Date(dateStr + "T00:00:00").toLocaleDateString("en-MW", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric",
     });
-  };
 
   const formatTime = (timeStr: string | null) => {
     if (!timeStr) return null;
@@ -86,12 +129,31 @@ const Events = () => {
               {filtered.map((evt, i) => (
                 <motion.div key={evt.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }} transition={{ delay: i * 0.05 }}
-                  className="rounded-xl bg-card border border-border p-6 hover:shadow-lg transition-shadow">
-                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${typeColors[evt.event_type] || typeColors.Other}`}>
-                    {evt.event_type}
-                  </span>
+                  className={`rounded-xl bg-card border p-6 hover:shadow-lg transition-shadow ${
+                    evt.is_fixed ? "border-primary/30 bg-primary/5" : "border-border"
+                  }`}>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${typeColors[evt.event_type] || typeColors.Other}`}>
+                      {evt.event_type}
+                    </span>
+                    {evt.is_fixed && (
+                      <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
+                        {evt.program?.service_type === "sunday" ? <Church size={10} className="mr-1" /> : <BookOpen size={10} className="mr-1" />}
+                        Fixed
+                      </Badge>
+                    )}
+                  </div>
                   <h3 className="mt-3 text-lg font-heading text-foreground">{evt.title}</h3>
                   {evt.description && <p className="mt-2 text-sm text-muted-foreground">{evt.description}</p>}
+
+                  {/* Show program summary for fixed services */}
+                  {evt.is_fixed && evt.program && (
+                    <div className="mt-3 text-xs text-muted-foreground space-y-1 border-t border-border pt-2">
+                      {evt.program.facilitator && <p>👤 Facilitator: {evt.program.facilitator}</p>}
+                      {evt.program.leading_verses && <p>📖 {evt.program.leading_verses}</p>}
+                    </div>
+                  )}
+
                   <div className="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><CalIcon size={14} /> {formatDate(evt.event_date)}</span>
                     {evt.event_time && <span className="flex items-center gap-1"><Clock size={14} /> {formatTime(evt.event_time)}</span>}
