@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogIn, LogOut, ChevronDown } from "lucide-react";
+import { Menu, X, LogIn, LogOut, ChevronDown, User, LayoutDashboard, Mail, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
@@ -9,8 +9,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const standaloneLinks = [
   { to: "/", label: "Home" },
@@ -115,28 +117,43 @@ const Navbar = () => {
           >
             Join Us
           </Link>
-          {user && (
-            <>
-              <Link to="/dashboard" className="ml-1 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                Dashboard
-              </Link>
-              <Link to="/messages" className="ml-1 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                Messages
-              </Link>
-            </>
-          )}
-          {isAdmin && (
-            <Link to="/admin" className="ml-1 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-              Admin
-            </Link>
-          )}
           {user ? (
-            <button
-              onClick={signOut}
-              className="ml-2 flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <LogOut size={16} /> Sign Out
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="ml-2 outline-none">
+                <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
+                  <AvatarImage src={(user as any)?.user_metadata?.avatar_url} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                    <User size={16} />
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[180px]">
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard" className="w-full flex items-center gap-2">
+                    <LayoutDashboard size={14} /> Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/messages" className="w-full flex items-center gap-2">
+                    <Mail size={14} /> Messages
+                  </Link>
+                </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="w-full flex items-center gap-2">
+                        <Shield size={14} /> Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive flex items-center gap-2 cursor-pointer">
+                  <LogOut size={14} /> Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Link
               to="/auth"
@@ -216,24 +233,24 @@ const Navbar = () => {
               {user && (
                 <>
                   <Link to="/dashboard" onClick={() => setOpen(false)}
-                    className="px-3 py-3 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted">
-                    Dashboard
+                    className="px-3 py-3 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-2">
+                    <LayoutDashboard size={16} /> Dashboard
                   </Link>
                   <Link to="/messages" onClick={() => setOpen(false)}
-                    className="px-3 py-3 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted">
-                    Messages
+                    className="px-3 py-3 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-2">
+                    <Mail size={16} /> Messages
                   </Link>
                 </>
               )}
               {isAdmin && (
                 <Link to="/admin" onClick={() => setOpen(false)}
-                  className="px-3 py-3 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted">
-                  Admin Dashboard
+                  className="px-3 py-3 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-2">
+                  <Shield size={16} /> Admin
                 </Link>
               )}
               {user ? (
                 <button onClick={() => { signOut(); setOpen(false); }}
-                  className="mt-1 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted text-center flex items-center justify-center gap-2">
+                  className="mt-1 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-muted text-center flex items-center justify-center gap-2">
                   <LogOut size={16} /> Sign Out
                 </button>
               ) : (

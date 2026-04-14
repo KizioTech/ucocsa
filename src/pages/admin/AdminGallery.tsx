@@ -111,7 +111,7 @@ const AdminGallery = () => {
         {/* Pending photos */}
         {(pendingPhotos?.length ?? 0) > 0 && (
           <Card>
-            <CardHeader><CardTitle className="text-base">📋 Pending Moderation ({pendingPhotos?.length})</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">Pending Moderation ({pendingPhotos?.length})</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {pendingPhotos?.map((photo) => (
@@ -148,7 +148,7 @@ const AdminGallery = () => {
                 <h3 className="font-semibold text-foreground truncate">{album.title}</h3>
                 <p className="text-xs text-muted-foreground">
                   {(album.gallery_photos as any)?.[0]?.count ?? 0} photos
-                  {album.is_highlighted && " • ✨ Highlighted"}
+                  {album.is_highlighted && " • Highlighted"}
                   {!album.is_published && " • Draft"}
                 </p>
               </div>

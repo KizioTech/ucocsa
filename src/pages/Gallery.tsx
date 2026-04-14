@@ -76,7 +76,7 @@ const Gallery = () => {
           {/* Highlights Carousel */}
           {highlightPhotos.length > 0 && (
             <div className="mb-12">
-              <h3 className="text-lg font-heading text-foreground mb-4">✨ Highlights</h3>
+              <h3 className="text-lg font-heading text-foreground mb-4">Highlights</h3>
               <Carousel opts={{ loop: true }} className="w-full max-w-4xl mx-auto">
                 <CarouselContent>
                   {highlightPhotos.map((photo) => (

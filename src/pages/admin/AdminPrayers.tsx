@@ -82,7 +82,7 @@ const AdminPrayers = () => {
                   <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
                     <span>From: {prayer.is_anonymous ? "Anonymous" : prayer.name || "Not provided"}</span>
                     <span>{new Date(prayer.created_at).toLocaleDateString()}</span>
-                    <span>🙏 {prayer.prayed_count}</span>
+                    <span>{prayer.prayed_count} prayed</span>
                   </div>
                 </div>
                 <div className="flex gap-1 shrink-0">

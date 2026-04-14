@@ -149,8 +149,8 @@ const Events = () => {
                   {/* Show program summary for fixed services */}
                   {evt.is_fixed && evt.program && (
                     <div className="mt-3 text-xs text-muted-foreground space-y-1 border-t border-border pt-2">
-                      {evt.program.facilitator && <p>👤 Facilitator: {evt.program.facilitator}</p>}
-                      {evt.program.leading_verses && <p>📖 {evt.program.leading_verses}</p>}
+                      {evt.program.facilitator && <p className="flex items-center gap-1"><User size={14} /> Facilitator: {evt.program.facilitator}</p>}
+                      {evt.program.leading_verses && <p className="flex items-center gap-1"><BookOpen size={14} /> {evt.program.leading_verses}</p>}
                     </div>
                   )}
 
