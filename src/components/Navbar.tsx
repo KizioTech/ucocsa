@@ -1,12 +1,36 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogIn, LogOut } from "lucide-react";
+import { Menu, X, LogIn, LogOut, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import logo from "@/assets/ucocsa-logo.png";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const navLinks = [
+const standaloneLinks = [
+  { to: "/", label: "Home" },
+];
+
+const communityLinks = [
+  { to: "/about", label: "About Us" },
+  { to: "/events", label: "Events" },
+  { to: "/gallery", label: "Gallery" },
+  { to: "/contact", label: "Contact" },
+];
+
+const growLinks = [
+  { to: "/resources", label: "Resources" },
+  { to: "/prayer", label: "Prayer" },
+  { to: "/blog", label: "Blog" },
+  { to: "/give", label: "Give" },
+];
+
+const allMobileLinks = [
   { to: "/", label: "Home" },
   { to: "/about", label: "About" },
   { to: "/events", label: "Events" },
@@ -18,8 +42,44 @@ const navLinks = [
   { to: "/give", label: "Give" },
 ];
 
+const NavDropdown = ({ label, links }: { label: string; links: { to: string; label: string }[] }) => {
+  const location = useLocation();
+  const isActive = links.some((l) => location.pathname === l.to);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className={`inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-colors outline-none ${
+          isActive
+            ? "text-primary bg-primary/10"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        }`}
+      >
+        {label}
+        <ChevronDown size={14} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[160px]">
+        {links.map((link) => (
+          <DropdownMenuItem key={link.to} asChild>
+            <Link
+              to={link.to}
+              className={`w-full ${
+                location.pathname === link.to ? "text-primary font-semibold" : ""
+              }`}
+            >
+              {link.label}
+            </Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const [communityOpen, setCommunityOpen] = useState(false);
+  const [growOpen, setGrowOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminCheck();
@@ -34,7 +94,7 @@ const Navbar = () => {
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => (
+          {standaloneLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
@@ -47,6 +107,8 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+          <NavDropdown label="Community" links={communityLinks} />
+          <NavDropdown label="Grow" links={growLinks} />
           <Link
             to="/join"
             className="ml-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-gold-dark transition-colors"
@@ -101,16 +163,52 @@ const Navbar = () => {
             className="md:hidden bg-background border-b border-border overflow-hidden"
           >
             <div className="container py-4 flex flex-col gap-1">
-              {navLinks.map((link) => (
-                <Link key={link.to} to={link.to} onClick={() => setOpen(false)}
-                  className={`px-3 py-3 rounded-md text-sm font-medium transition-colors ${
-                    location.pathname === link.to
-                      ? "text-primary bg-primary/10"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}>
-                  {link.label}
-                </Link>
-              ))}
+              {/* Community group */}
+              <button
+                onClick={() => setCommunityOpen(!communityOpen)}
+                className="flex items-center justify-between px-3 py-3 rounded-md text-sm font-semibold text-foreground"
+              >
+                Community
+                <ChevronDown size={16} className={`transition-transform ${communityOpen ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {communityOpen && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden pl-3">
+                    {communityLinks.map((link) => (
+                      <Link key={link.to} to={link.to} onClick={() => setOpen(false)}
+                        className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                          location.pathname === link.to ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`}>
+                        {link.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Grow group */}
+              <button
+                onClick={() => setGrowOpen(!growOpen)}
+                className="flex items-center justify-between px-3 py-3 rounded-md text-sm font-semibold text-foreground"
+              >
+                Grow
+                <ChevronDown size={16} className={`transition-transform ${growOpen ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {growOpen && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden pl-3">
+                    {growLinks.map((link) => (
+                      <Link key={link.to} to={link.to} onClick={() => setOpen(false)}
+                        className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                          location.pathname === link.to ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`}>
+                        {link.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <Link to="/join" onClick={() => setOpen(false)}
                 className="mt-2 px-4 py-3 rounded-lg bg-primary text-primary-foreground text-sm font-semibold text-center">
                 Join Us
