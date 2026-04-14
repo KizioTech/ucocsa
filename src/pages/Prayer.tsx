@@ -59,7 +59,7 @@ const Prayer = () => {
       });
       if (error) throw error;
       setSubmitted(true);
-      toast.success("Your prayer request has been submitted. We are praying with you. 🙏");
+      toast.success("Your prayer request has been submitted. We are praying with you.");
     } catch (err: any) {
       toast.error(err.message || "Failed to submit prayer request");
     } finally {

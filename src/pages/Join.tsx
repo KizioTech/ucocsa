@@ -50,7 +50,7 @@ const Join = () => {
       });
       if (error) throw error;
       setSubmitted(true);
-      toast.success("Welcome to the UCOCSA family! 🎉");
+      toast.success("Welcome to the UCOCSA family!");
     } catch (err: any) {
       toast.error(err.message || "Registration failed. Please try again.");
     } finally {

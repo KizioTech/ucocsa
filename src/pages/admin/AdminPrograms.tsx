@@ -236,9 +236,9 @@ const AdminPrograms = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    📅 {new Date(p.service_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
-                    {p.facilitator && <> · 👤 {p.facilitator}</>}
-                    {p.theme && <> · 📖 {p.theme}</>}
+                    {new Date(p.service_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                    {p.facilitator && <> · {p.facilitator}</>}
+                    {p.theme && <> · {p.theme}</>}
                   </p>
                 </CardContent>
               </Card>

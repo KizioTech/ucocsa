@@ -23,7 +23,7 @@ const Auth = () => {
           password: form.password,
         });
         if (error) throw error;
-        toast.success("Welcome back! 🙏");
+        toast.success("Welcome back!");
         navigate("/");
       } else {
         const { error } = await supabase.auth.signUp({
@@ -35,7 +35,7 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast.success("Account created! Check your email to verify your account. ✉️");
+        toast.success("Account created! Check your email to verify your account.");
       }
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");

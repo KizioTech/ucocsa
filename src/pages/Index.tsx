@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, HandHeart, BookOpen, Users, Music, ArrowRight, Image, Church } from "lucide-react";
+import { Calendar, HandHeart, BookOpen, Users, Music, ArrowRight, Image, Church, Megaphone, CalendarDays, Clock, MapPin } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import CountdownTimer from "@/components/CountdownTimer";
@@ -167,7 +167,7 @@ const Index = () => {
       {latestAnnouncement && (
         <div className="bg-primary/10 border-y border-primary/20">
           <div className="container py-3 text-center text-sm font-medium text-foreground">
-            📢 <span className="text-primary font-semibold">{latestAnnouncement.title}:</span> {latestAnnouncement.content.slice(0, 120)}
+            <Megaphone size={14} className="inline mr-1 text-primary" /> <span className="text-primary font-semibold">{latestAnnouncement.title}:</span> {latestAnnouncement.content.slice(0, 120)}
             {latestAnnouncement.content.length > 120 && "…"}
           </div>
         </div>
@@ -178,7 +178,7 @@ const Index = () => {
         <section className="py-12 bg-muted/30">
           <div className="container">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl md:text-2xl font-heading text-foreground">✨ Gallery Highlights</h2>
+              <h2 className="text-xl md:text-2xl font-heading text-foreground">Gallery Highlights</h2>
               <Link to="/gallery" className="inline-flex items-center gap-1 text-sm text-primary font-medium hover:underline">
                 View Gallery <ArrowRight size={14} />
               </Link>
@@ -238,9 +238,9 @@ const Index = () => {
                 <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">{evt.event_type}</span>
                 <h3 className="mt-3 text-lg font-heading text-foreground">{evt.title}</h3>
                 <div className="mt-3 space-y-1 text-sm text-muted-foreground">
-                  <p>📅 {new Date(evt.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p>
-                  {evt.event_time && <p>🕐 {evt.event_time}</p>}
-                  {evt.location && <p>📍 {evt.location}</p>}
+                  <p className="flex items-center gap-1"><CalendarDays size={14} /> {new Date(evt.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p>
+                  {evt.event_time && <p className="flex items-center gap-1"><Clock size={14} /> {evt.event_time}</p>}
+                  {evt.location && <p className="flex items-center gap-1"><MapPin size={14} /> {evt.location}</p>}
                 </div>
               </motion.div>
             ))}

@@ -172,7 +172,7 @@ const Dashboard = () => {
                           {prayer.status}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          🙏 {prayer.prayed_count}
+                          {prayer.prayed_count} prayed
                         </span>
                       </div>
                     </div>

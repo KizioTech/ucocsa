@@ -271,7 +271,7 @@ const Messages = () => {
                     >
                       <Avatar className="h-10 w-10 shrink-0">
                         <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
-                          {convo.type === "prayer_group" ? "🙏" : convo.type === "group" ? "👥" : "💬"}
+                          {convo.type === "prayer_group" ? "P" : convo.type === "group" ? "G" : "D"}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">

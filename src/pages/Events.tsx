@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Calendar as CalIcon, MapPin, Clock, Share2, Church, BookOpen } from "lucide-react";
+import { Calendar as CalIcon, MapPin, Clock, Share2, Church, BookOpen, User } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
@@ -149,8 +149,8 @@ const Events = () => {
                   {/* Show program summary for fixed services */}
                   {evt.is_fixed && evt.program && (
                     <div className="mt-3 text-xs text-muted-foreground space-y-1 border-t border-border pt-2">
-                      {evt.program.facilitator && <p>👤 Facilitator: {evt.program.facilitator}</p>}
-                      {evt.program.leading_verses && <p>📖 {evt.program.leading_verses}</p>}
+                      {evt.program.facilitator && <p className="flex items-center gap-1"><User size={14} /> Facilitator: {evt.program.facilitator}</p>}
+                      {evt.program.leading_verses && <p className="flex items-center gap-1"><BookOpen size={14} /> {evt.program.leading_verses}</p>}
                     </div>
                   )}
 
