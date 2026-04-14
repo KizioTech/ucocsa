@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Calendar as CalIcon, MapPin, Clock, Share2, Church, BookOpen, User } from "lucide-react";
+import { Calendar as CalIcon, MapPin, Clock, Share2, Church, BookOpen, User, ChevronDown, ChevronUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 
 type EventType = "Fellowship" | "Bible Study" | "Outreach" | "Special Service" | "Social" | "Other";
 
@@ -21,9 +22,10 @@ const typeColors: Record<string, string> = {
 
 const Events = () => {
   const [filter, setFilter] = useState<string>("All");
+  const [expandedProgram, setExpandedProgram] = useState<string | null>(null);
+  const { user } = useAuth();
   const types = ["All", "Fellowship", "Bible Study", "Outreach", "Special Service", "Social", "MidWeek Service", "Sunday Service", "Other"];
 
-  // Fetch regular events
   const { data: dbEvents, isLoading: eventsLoading } = useQuery({
     queryKey: ["events-page"],
     queryFn: async () => {
@@ -36,7 +38,6 @@ const Events = () => {
     },
   });
 
-  // Fetch upcoming service programs (fixed events)
   const { data: programs, isLoading: programsLoading } = useQuery({
     queryKey: ["events-page-programs"],
     queryFn: async () => {
@@ -51,7 +52,6 @@ const Events = () => {
     },
   });
 
-  // Merge fixed services into events list
   const allEvents = useMemo(() => {
     const regular = (dbEvents ?? []).map((e) => ({
       id: e.id,
@@ -94,6 +94,10 @@ const Events = () => {
     const hour = parseInt(h);
     const ampm = hour >= 12 ? "PM" : "AM";
     return `${hour > 12 ? hour - 12 : hour}:${m} ${ampm}`;
+  };
+
+  const toggleProgram = (id: string) => {
+    setExpandedProgram(expandedProgram === id ? null : id);
   };
 
   return (
@@ -146,11 +150,58 @@ const Events = () => {
                   <h3 className="mt-3 text-lg font-heading text-foreground">{evt.title}</h3>
                   {evt.description && <p className="mt-2 text-sm text-muted-foreground">{evt.description}</p>}
 
-                  {/* Show program summary for fixed services */}
+                  {/* Public summary for fixed services */}
                   {evt.is_fixed && evt.program && (
                     <div className="mt-3 text-xs text-muted-foreground space-y-1 border-t border-border pt-2">
                       {evt.program.facilitator && <p className="flex items-center gap-1"><User size={14} /> Facilitator: {evt.program.facilitator}</p>}
                       {evt.program.leading_verses && <p className="flex items-center gap-1"><BookOpen size={14} /> {evt.program.leading_verses}</p>}
+                    </div>
+                  )}
+
+                  {/* Full program details for logged-in members */}
+                  {evt.is_fixed && evt.program && user && (
+                    <div className="mt-3">
+                      <button
+                        onClick={() => toggleProgram(evt.id)}
+                        className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                      >
+                        {expandedProgram === evt.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        {expandedProgram === evt.id ? "Hide" : "View"} Full Program
+                      </button>
+
+                      {expandedProgram === evt.id && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          className="mt-2 bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5 border border-border"
+                        >
+                          <p className="font-semibold text-foreground text-sm mb-2">Order of Service</p>
+                          {evt.program.service_type === "sunday" ? (
+                            <>
+                              {evt.program.convener && <p><span className="font-medium text-foreground">Convener:</span> {evt.program.convener}</p>}
+                              {evt.program.first_prayer && <p><span className="font-medium text-foreground">First Prayer:</span> {evt.program.first_prayer}</p>}
+                              {evt.program.teaching && <p><span className="font-medium text-foreground">Teaching:</span> {evt.program.teaching}</p>}
+                              {evt.program.preaching && <p><span className="font-medium text-foreground">Preaching:</span> {evt.program.preaching}</p>}
+                              {evt.program.alter_call && <p><span className="font-medium text-foreground">Altar Call:</span> {evt.program.alter_call}</p>}
+                              {evt.program.holy_communion && <p><span className="font-medium text-foreground">Holy Communion:</span> {evt.program.holy_communion}</p>}
+                              {evt.program.bearers && evt.program.bearers.length > 0 && evt.program.bearers.some((b: string) => b) && (
+                                <p><span className="font-medium text-foreground">Bearers:</span> {evt.program.bearers.filter((b: string) => b).join(", ")}</p>
+                              )}
+                              {evt.program.last_prayer && <p><span className="font-medium text-foreground">Last Prayer:</span> {evt.program.last_prayer}</p>}
+                              {evt.program.announcements && <p><span className="font-medium text-foreground">Announcements:</span> {evt.program.announcements}</p>}
+                            </>
+                          ) : (
+                            <>
+                              {evt.program.facilitator && <p><span className="font-medium text-foreground">Facilitator:</span> {evt.program.facilitator}</p>}
+                              {evt.program.leading_verses && <p><span className="font-medium text-foreground">Scripture:</span> {evt.program.leading_verses}</p>}
+                              {evt.program.theme && <p><span className="font-medium text-foreground">Theme:</span> {evt.program.theme}</p>}
+                              {evt.program.first_prayer && <p><span className="font-medium text-foreground">Opening Prayer:</span> {evt.program.first_prayer}</p>}
+                              {evt.program.last_prayer && <p><span className="font-medium text-foreground">Closing Prayer:</span> {evt.program.last_prayer}</p>}
+                              {evt.program.announcements && <p><span className="font-medium text-foreground">Announcements:</span> {evt.program.announcements}</p>}
+                            </>
+                          )}
+                        </motion.div>
+                      )}
                     </div>
                   )}
 
