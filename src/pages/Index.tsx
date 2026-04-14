@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, HandHeart, BookOpen, Users, Music, ArrowRight, Image } from "lucide-react";
+import { Calendar, HandHeart, BookOpen, Users, Music, ArrowRight, Image, Church } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import CountdownTimer from "@/components/CountdownTimer";
@@ -79,6 +79,23 @@ const Index = () => {
         .select("*, gallery_photos(id, image_url, caption)")
         .eq("is_highlighted", true)
         .eq("is_published", true);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Upcoming service programs
+  const { data: upcomingPrograms } = useQuery({
+    queryKey: ["homepage-programs"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("service_programs")
+        .select("*")
+        .eq("is_published", true)
+        .gte("service_date", today)
+        .order("service_date", { ascending: true })
+        .limit(2);
       if (error) throw error;
       return data;
     },
