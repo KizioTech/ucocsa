@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import SectionHeading from "@/components/SectionHeading";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Blog = () => {
   const { data: posts = [], isLoading } = useQuery({
@@ -12,7 +13,7 @@ const Blog = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("blog_posts")
-        .select("*")
+        .select("*, profiles!blog_posts_author_id_fkey(full_name, avatar_url)")
         .eq("is_published", true)
         .order("published_at", { ascending: false });
       if (error) throw error;
@@ -32,53 +33,87 @@ const Blog = () => {
       </section>
 
       <section className="py-16">
-        <div className="container max-w-4xl">
+        <div className="container max-w-5xl">
           {isLoading ? (
-            <p className="text-center text-muted-foreground">Loading posts…</p>
+            <div className="grid sm:grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-64 rounded-xl bg-muted animate-pulse" />
+              ))}
+            </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">No blog posts yet. Check back soon!</p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="grid sm:grid-cols-2 gap-8">
               {posts.map((post, i) => (
-                <Link to={`/blog/${post.slug}`} key={post.id}>
-                  <motion.article
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05 }}
-                    className="p-6 rounded-xl bg-card border border-border hover:shadow-lg transition-shadow group cursor-pointer flex gap-4"
-                  >
-                    {post.cover_image_url && (
+                <motion.article
+                  key={post.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  className="group flex flex-col bg-card rounded-2xl border border-border overflow-hidden hover:shadow-xl transition-all duration-300"
+                >
+                  <Link to={`/blog/${post.slug}`} className="relative h-56 overflow-hidden">
+                    {post.cover_image_url ? (
                       <img
                         src={post.cover_image_url}
                         alt={post.title}
-                        className="w-24 h-24 rounded-lg object-cover shrink-0 hidden sm:block"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
+                    ) : (
+                      <div className="w-full h-full bg-primary/5 flex items-center justify-center">
+                        <User size={48} className="text-primary/20" />
+                      </div>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1 rounded-full bg-background/90 backdrop-blur-sm text-xs font-semibold text-primary shadow-sm">
                         {post.category}
                       </span>
-                      <h2 className="mt-3 text-xl font-heading text-foreground group-hover:text-primary transition-colors">
+                    </div>
+                  </Link>
+
+                  <div className="p-6 flex-1 flex flex-col">
+                    <Link to={`/blog/${post.slug}`}>
+                      <h2 className="text-xl font-heading text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                         {post.title}
                       </h2>
-                      {post.excerpt && (
-                        <p className="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-2">{post.excerpt}</p>
-                      )}
-                      <div className="mt-4 flex items-center justify-between">
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><User size={12} /> {post.author_name}</span>
-                          <span>{post.published_at ? new Date(post.published_at).toLocaleDateString() : ""}</span>
+                    </Link>
+                    
+                    {post.excerpt && (
+                      <p className="mt-3 text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                        {post.excerpt}
+                      </p>
+                    )}
+
+                    <div className="mt-auto pt-6 flex items-center justify-between border-t border-border/50">
+                      <Link to={`/profile/${post.author_id}`} className="flex items-center gap-2 group/author">
+                        <Avatar className="h-8 w-8 transition-ring group-hover/author:ring-2 ring-primary/30">
+                          <AvatarImage src={post.profiles?.avatar_url} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
+                            {(post.profiles?.full_name || post.author_name || "U")[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-semibold text-foreground group-hover/author:text-primary transition-colors">
+                            {post.profiles?.full_name || post.author_name}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {post.published_at ? new Date(post.published_at).toLocaleDateString() : ""}
+                          </span>
                         </div>
-                        <span className="flex items-center gap-1 text-xs text-primary font-medium group-hover:underline">
-                          Read more <ArrowRight size={12} />
-                        </span>
-                      </div>
+                      </Link>
+
+                      <Link 
+                        to={`/blog/${post.slug}`}
+                        className="p-2 rounded-full bg-primary/5 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
+                      >
+                        <ArrowRight size={16} />
+                      </Link>
                     </div>
-                  </motion.article>
-                </Link>
+                  </div>
+                </motion.article>
               ))}
             </div>
           )}
@@ -89,3 +124,4 @@ const Blog = () => {
 };
 
 export default Blog;
+

@@ -24,6 +24,7 @@ import AdminBlog from "./pages/admin/AdminBlog.tsx";
 import AdminAnnouncements from "./pages/admin/AdminAnnouncements.tsx";
 import AdminGallery from "./pages/admin/AdminGallery.tsx";
 import AdminPrograms from "./pages/admin/AdminPrograms.tsx";
+import AdminTeam from "./pages/admin/AdminTeam.tsx";
 import Gallery from "./pages/Gallery.tsx";
 import Profile from "./pages/Profile.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/join" element={<Join />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:id" element={<Profile />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
@@ -65,6 +67,7 @@ const App = () => (
             <Route path="/admin/announcements" element={<ProtectedRoute><AdminAnnouncements /></ProtectedRoute>} />
             <Route path="/admin/gallery" element={<ProtectedRoute><AdminGallery /></ProtectedRoute>} />
             <Route path="/admin/programs" element={<ProtectedRoute><AdminPrograms /></ProtectedRoute>} />
+            <Route path="/admin/team" element={<ProtectedRoute><AdminTeam /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

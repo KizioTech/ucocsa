@@ -35,6 +35,7 @@ const items = [
   { title: "Announcements", url: "/admin/announcements", icon: Megaphone },
   { title: "Gallery", url: "/admin/gallery", icon: Image },
   { title: "Programs", url: "/admin/programs", icon: Church },
+  { title: "Executive Team", url: "/admin/team", icon: Users },
 ];
 
 export function AdminSidebar() {

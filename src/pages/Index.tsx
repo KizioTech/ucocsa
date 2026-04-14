@@ -6,6 +6,8 @@ import Layout from "@/components/Layout";
 import CountdownTimer from "@/components/CountdownTimer";
 import SectionHeading from "@/components/SectionHeading";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import heroBg from "@/assets/hero-bg.jpg";
@@ -21,7 +23,7 @@ const ministries = [
   { icon: Music, title: "Hymns Ministry", desc: "Worship through hymns and praise" },
   { icon: BookOpen, title: "Bible Study", desc: "Weekly small-group discussions" },
   { icon: Users, title: "Outreach", desc: "Community service and evangelism" },
-  { icon: HandHeart, title: "Prayer Team", desc: "Intercession and spiritual support" },
+  { icon: HandHeart, title: "Prayer", desc: "Intercession and spiritual support" },
 ];
 
 const Index = () => {
