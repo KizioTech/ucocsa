@@ -36,7 +36,7 @@ const BlogPost = () => {
   const { data: post, isLoading } = useQuery({
     queryKey: ["blog-post", slug],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("blog_posts")
         .select("*, profiles!blog_posts_author_id_fkey(id, full_name, avatar_url)")
         .eq("slug", slug!)
@@ -96,13 +96,13 @@ const BlogPost = () => {
   const toggleCommentLike = useMutation({
     mutationFn: async (commentId: string) => {
       if (!user) { toast.error("Sign in to like"); return; }
-      const commentLikes = comments.find((c: any) => c.id === commentId)?.blog_comment_likes || [];
+      const commentLikes = (comments.find((c: any) => c.id === commentId) as any)?.blog_comment_likes || [];
       const userLiked = commentLikes.some((l: any) => l.user_id === user.id);
 
       if (userLiked) {
-        await supabase.from("blog_comment_likes").delete().eq("comment_id", commentId).eq("user_id", user.id);
+        await (supabase as any).from("blog_comment_likes").delete().eq("comment_id", commentId).eq("user_id", user.id);
       } else {
-        await supabase.from("blog_comment_likes").insert({ comment_id: commentId, user_id: user.id });
+        await (supabase as any).from("blog_comment_likes").insert({ comment_id: commentId, user_id: user.id });
       }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["blog-comments", post?.id] }),
