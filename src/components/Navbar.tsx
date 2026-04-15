@@ -30,6 +30,7 @@ const growLinks = [
   { to: "/prayer", label: "Prayer" },
   { to: "/blog", label: "Blog" },
   { to: "/give", label: "Give" },
+  { to: "/hymns", label: "🎵 Hymns" },
 ];
 
 const allMobileLinks = [
@@ -40,6 +41,7 @@ const allMobileLinks = [
   { to: "/resources", label: "Resources" },
   { to: "/prayer", label: "Prayer" },
   { to: "/blog", label: "Blog" },
+  { to: "/hymns", label: "🎵 Hymns" },
   { to: "/contact", label: "Contact" },
   { to: "/give", label: "Give" },
 ];

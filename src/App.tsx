@@ -28,12 +28,14 @@ const AdminAnnouncements = lazy(() => import("./pages/admin/AdminAnnouncements.t
 const AdminGallery = lazy(() => import("./pages/admin/AdminGallery.tsx"));
 const AdminPrograms = lazy(() => import("./pages/admin/AdminPrograms.tsx"));
 const AdminTeam = lazy(() => import("./pages/admin/AdminTeam.tsx"));
+const AdminHymns = lazy(() => import("./pages/admin/AdminHymns.tsx"));
 const Gallery = lazy(() => import("./pages/Gallery.tsx"));
 const Profile = lazy(() => import("./pages/Profile.tsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
 const Messages = lazy(() => import("./pages/Messages.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const Hymns = lazy(() => import("./pages/Hymns.tsx"));
 
 // Loading Fallback Component
 const PageLoader = () => (
@@ -66,6 +68,7 @@ const App = () => (
               <Route path="/give" element={<Give />} />
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/join" element={<Join />} />
+              <Route path="/hymns" element={<Hymns />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/:id" element={<Profile />} />
@@ -80,6 +83,7 @@ const App = () => (
               <Route path="/admin/gallery" element={<ProtectedRoute><AdminGallery /></ProtectedRoute>} />
               <Route path="/admin/programs" element={<ProtectedRoute><AdminPrograms /></ProtectedRoute>} />
               <Route path="/admin/team" element={<ProtectedRoute><AdminTeam /></ProtectedRoute>} />
+              <Route path="/admin/hymns" element={<ProtectedRoute><AdminHymns /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

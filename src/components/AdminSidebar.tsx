@@ -9,6 +9,7 @@ import {
   LogOut,
   Home,
   Church,
+  Music,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -36,6 +37,7 @@ const items = [
   { title: "Gallery", url: "/admin/gallery", icon: Image },
   { title: "Programs", url: "/admin/programs", icon: Church },
   { title: "Executive Team", url: "/admin/team", icon: Users },
+  { title: "Hymns", url: "/admin/hymns", icon: Music },
 ];
 
 export function AdminSidebar() {

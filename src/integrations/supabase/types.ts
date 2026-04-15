@@ -251,6 +251,42 @@ export type Database = {
         }
         Relationships: []
       }
+      hymns: {
+        Row: {
+          id: number
+          title: string
+          author: string | null
+          category: string | null
+          verses: string[]
+          youtube_id: string | null
+          first_line: string | null
+          bio: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          title: string
+          author?: string | null
+          category?: string | null
+          verses?: string[]
+          youtube_id?: string | null
+          first_line?: string | null
+          bio?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          title?: string
+          author?: string | null
+          category?: string | null
+          verses?: string[]
+          youtube_id?: string | null
+          first_line?: string | null
+          bio?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       gallery_albums: {
         Row: {
           cover_image_url: string | null
