@@ -60,8 +60,8 @@ const BlogPost = () => {
     queryKey: ["blog-comments", post?.id],
     enabled: !!post,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("blog_comments")
+      const { data, error } = await (supabase
+        .from("blog_comments") as any)
         .select(`
           id,
           content,
@@ -111,7 +111,7 @@ const BlogPost = () => {
   const handleAddComment = useMutation({
     mutationFn: async ({ content, parentId }: { content: string, parentId?: string }) => {
       if (!user) { toast.error("Sign in to comment"); return; }
-      const { error } = await supabase.from("blog_comments").insert({
+      const { error } = await (supabase.from("blog_comments") as any).insert({
         post_id: post!.id,
         user_id: user.id,
         content: content.trim(),

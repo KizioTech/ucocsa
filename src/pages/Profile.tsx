@@ -37,10 +37,9 @@ const Profile = () => {
     if (targetId) {
       const fetchProfileData = async () => {
         setLoadingProfile(true);
-        const [profileRes, postsRes] = await Promise.all([
+         const [profileRes, postsRes] = await Promise.all([
           supabase.from("profiles").select("*").eq("id", targetId).single(),
-          // @ts-expect-error - author_id might be missing in types.ts
-          supabase.from("blog_posts").select("*").eq("author_id", targetId).eq("is_published", true).order("published_at", { ascending: false })
+          (supabase.from("blog_posts") as any).select("*").eq("author_id", targetId).eq("is_published", true).order("published_at", { ascending: false })
         ]);
 
         if (profileRes.data) {
