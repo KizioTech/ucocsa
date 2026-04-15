@@ -12,6 +12,7 @@ interface TeamMember {
   role: string;
   bio: string | null;
   whatsapp_number: string | null;
+  image_url: string | null;
 }
 
 const About = () => {

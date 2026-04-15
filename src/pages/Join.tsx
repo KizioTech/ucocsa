@@ -97,7 +97,7 @@ const Join = () => {
                 <h2 className="text-xl font-heading text-foreground">Membership Form</h2>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">First Name *</label>
                   <input required type="text" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })}
@@ -124,7 +124,7 @@ const Join = () => {
                   className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">Faculty *</label>
                   <select required value={form.faculty} onChange={(e) => setForm({ ...form, faculty: e.target.value })}

@@ -70,12 +70,12 @@ const AdminBlog = () => {
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["admin-blog-posts"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("blog_posts")
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as BlogPost[];
+      return (data || []) as BlogPost[];
     },
   });
 
@@ -103,10 +103,10 @@ const AdminBlog = () => {
       };
 
       if (editingId) {
-        const { error } = await supabase.from("blog_posts").update(payload).eq("id", editingId);
+        const { error } = await (supabase as any).from("blog_posts").update(payload).eq("id", editingId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("blog_posts").insert(payload);
+        const { error } = await (supabase as any).from("blog_posts").insert(payload);
         if (error) throw error;
       }
     },

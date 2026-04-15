@@ -33,11 +33,11 @@ const AdminTeam = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchMembers = async () => {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("team_members")
       .select("*")
       .order("order_index", { ascending: true });
-    if (data) setMembers(data);
+    if (data) setMembers(data as TeamMember[]);
   };
 
   useEffect(() => {
@@ -111,11 +111,11 @@ const AdminTeam = () => {
       };
 
       if (editingId) {
-        const { error } = await supabase.from("team_members").update(payload).eq("id", editingId);
+        const { error } = await (supabase as any).from("team_members").update(payload).eq("id", editingId);
         if (error) throw error;
         toast.success("Team member updated!");
       } else {
-        const { error } = await supabase.from("team_members").insert(payload);
+        const { error } = await (supabase as any).from("team_members").insert(payload);
         if (error) throw error;
         toast.success("Team member added!");
       }
@@ -130,7 +130,7 @@ const AdminTeam = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Remove this team member?")) return;
-    const { error } = await supabase.from("team_members").delete().eq("id", id);
+    const { error } = await (supabase as any).from("team_members").delete().eq("id", id);
     if (error) {
       toast.error(error.message);
     } else {

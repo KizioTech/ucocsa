@@ -74,13 +74,6 @@ export type Database = {
             referencedRelation: "blog_posts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "blog_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
         ]
       }
       blog_likes: {
@@ -114,7 +107,6 @@ export type Database = {
       }
       blog_posts: {
         Row: {
-          author_id: string | null
           author_name: string
           category: string
           content: string
@@ -129,7 +121,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          author_id?: string | null
           author_name?: string
           category?: string
           content: string
@@ -144,7 +135,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          author_id?: string | null
           author_name?: string
           category?: string
           content?: string
@@ -158,15 +148,7 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "blog_posts_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
       conversation_participants: {
         Row: {
@@ -441,13 +423,6 @@ export type Database = {
             referencedRelation: "praise_reports"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "praise_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
         ]
       }
       praise_reports: {
@@ -507,13 +482,6 @@ export type Database = {
             referencedRelation: "prayer_requests"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "prayer_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
         ]
       }
       prayer_requests: {
@@ -648,72 +616,6 @@ export type Database = {
           theme?: string | null
           title?: string | null
           updated_at?: string
-        }
-        Relationships: []
-      }
-      blog_comment_likes: {
-        Row: {
-          comment_id: string
-          created_at: string
-          id: string
-          user_id: string
-        }
-        Insert: {
-          comment_id: string
-          created_at?: string
-          id?: string
-          user_id: string
-        }
-        Update: {
-          comment_id?: string
-          created_at?: string
-          id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "blog_comment_likes_comment_id_fkey"
-            columns: ["comment_id"]
-            isOneToOne: false
-            referencedRelation: "blog_comments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "blog_comment_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      team_members: {
-        Row: {
-          bio: string | null
-          id: string
-          image_url: string | null
-          name: string
-          order_index: number
-          role: string
-          whatsapp_number: string | null
-        }
-        Insert: {
-          bio?: string | null
-          id?: string
-          image_url?: string | null
-          name: string
-          order_index: number
-          role: string
-          whatsapp_number?: string | null
-        }
-        Update: {
-          bio?: string | null
-          id?: string
-          image_url?: string | null
-          name?: string
-          order_index?: number
-          role?: string
-          whatsapp_number?: string | null
         }
         Relationships: []
       }
