@@ -249,7 +249,17 @@ const BlogPost = () => {
         <div className="container max-w-3xl bg-background rounded-t-[3rem] shadow-2xl p-8 md:p-16 border-x border-t border-border/40">
           {/* Content */}
           <div className="prose prose-zinc dark:prose-invert lg:prose-xl max-w-none text-foreground leading-[1.8] selection:bg-primary/20">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]} 
+              rehypePlugins={[rehypeRaw]}
+              components={{
+                table: ({node, ...props}) => (
+                  <div className="w-full overflow-x-auto pb-4 mb-8">
+                    <table className="min-w-full m-0 border-collapse" {...props} />
+                  </div>
+                )
+              }}
+            >
               {post.content}
             </ReactMarkdown>
           </div>

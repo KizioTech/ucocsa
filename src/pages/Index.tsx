@@ -50,7 +50,7 @@ const Index = () => {
         .from("announcements")
         .select("*")
         .eq("is_published", true)
-        .order("published_at", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(1);
       if (error) throw error;
       return data;

@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmAction } from "@/components/ConfirmAction";
 
 const AdminGallery = () => {
   const queryClient = useQueryClient();
@@ -65,7 +66,6 @@ const AdminGallery = () => {
   };
 
   const deleteAlbum = async (id: string) => {
-    if (!confirm("Delete this album and all its photos?")) return;
     const { error } = await supabase.from("gallery_albums").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Album deleted");
@@ -159,9 +159,11 @@ const AdminGallery = () => {
                 <Button size="icon" variant="ghost" onClick={() => toggleAlbumField(album.id, "is_published", album.is_published)} title="Toggle publish">
                   {album.is_published ? <Eye size={16} /> : <EyeOff size={16} />}
                 </Button>
-                <Button size="icon" variant="ghost" onClick={() => deleteAlbum(album.id)} className="text-destructive hover:text-destructive">
-                  <Trash2 size={16} />
-                </Button>
+                <ConfirmAction onConfirm={() => deleteAlbum(album.id)} description="Delete this album and all its photos?">
+                  <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive">
+                    <Trash2 size={16} />
+                  </Button>
+                </ConfirmAction>
               </div>
             </div>
           ))}

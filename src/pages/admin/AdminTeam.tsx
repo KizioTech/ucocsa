@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, X, Users, Upload, Image as ImageIcon } from "luci
 import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ConfirmAction } from "@/components/ConfirmAction";
 
 interface TeamMember {
   id: string;
@@ -129,7 +130,6 @@ const AdminTeam = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Remove this team member?")) return;
     const { error } = await (supabase as any).from("team_members").delete().eq("id", id);
     if (error) {
       toast.error(error.message);
@@ -293,9 +293,11 @@ const AdminTeam = () => {
                         <button onClick={() => openEdit(member)} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
                           <Pencil size={16} />
                         </button>
-                        <button onClick={() => handleDelete(member.id)} className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-                          <Trash2 size={16} />
-                        </button>
+                        <ConfirmAction onConfirm={() => handleDelete(member.id)} description="Remove this team member?">
+                          <button className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+                            <Trash2 size={16} />
+                          </button>
+                        </ConfirmAction>
                       </div>
                     </td>
                   </tr>

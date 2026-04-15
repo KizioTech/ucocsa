@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, X } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ConfirmAction } from "@/components/ConfirmAction";
 
 const eventTypes = ["Fellowship", "Bible Study", "Outreach", "Special Service", "Social", "Other"];
 
@@ -103,7 +104,6 @@ const AdminEvents = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this event?")) return;
     const { error } = await supabase.from("events").delete().eq("id", id);
     if (error) {
       toast.error(error.message);
@@ -205,7 +205,9 @@ const AdminEvents = () => {
                     <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{evt.location || "—"}</td>
                     <td className="px-4 py-3 text-right">
                       <button onClick={() => openEdit(evt)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground mr-1"><Pencil size={14} /></button>
-                      <button onClick={() => handleDelete(evt.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"><Trash2 size={14} /></button>
+                      <ConfirmAction onConfirm={() => handleDelete(evt.id)} description="Delete this event?">
+                        <button className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"><Trash2 size={14} /></button>
+                      </ConfirmAction>
                     </td>
                   </tr>
                 ))}

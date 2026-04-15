@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Eye, EyeOff, Megaphone } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { ConfirmAction } from "@/components/ConfirmAction";
 
 const defaultForm = { title: "", content: "" };
 
@@ -142,9 +143,11 @@ const AdminAnnouncements = () => {
                   <Button size="sm" variant="outline" onClick={() => togglePublish.mutate({ id: a.id, publish: !a.is_published })}>
                     {a.is_published ? <><EyeOff size={14} /> Unpublish</> : <><Eye size={14} /> Publish</>}
                   </Button>
-                  <Button size="sm" variant="destructive" onClick={() => { if (confirm("Delete?")) deleteMut.mutate(a.id); }}>
-                    <Trash2 size={14} /> Delete
-                  </Button>
+                  <ConfirmAction onConfirm={() => deleteMut.mutate(a.id)} description="Permanently delete this announcement?">
+                    <Button size="sm" variant="destructive">
+                      <Trash2 size={14} /> Delete
+                    </Button>
+                  </ConfirmAction>
                 </div>
               </CardContent>
             </Card>

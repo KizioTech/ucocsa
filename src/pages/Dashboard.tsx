@@ -43,7 +43,7 @@ const Dashboard = () => {
       supabase.from("profiles").select("full_name, avatar_url, created_at").eq("id", user!.id).single(),
       supabase.from("prayer_requests").select("*").order("created_at", { ascending: false }).limit(5),
       supabase.from("events").select("*").gte("event_date", new Date().toISOString().split("T")[0]).order("event_date").limit(5),
-      supabase.from("announcements").select("*").eq("is_published", true).order("published_at", { ascending: false }).limit(5),
+      supabase.from("announcements").select("*").eq("is_published", true).order("created_at", { ascending: false }).limit(5),
       supabase.from("blog_posts").select("*").eq("is_published", true).order("published_at", { ascending: false }).limit(3),
       supabase.from("conversation_participants").select("conversation_id").eq("user_id", user!.id),
     ]);

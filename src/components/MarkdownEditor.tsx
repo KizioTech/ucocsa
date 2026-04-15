@@ -33,8 +33,34 @@ const MarkdownEditor = ({ value, onChange, placeholder }: MarkdownEditorProps) =
   // Dialog states
   const [linkData, setLinkData] = useState({ text: "", url: "" });
   const [imageData, setImageData] = useState({ alt: "", url: "" });
-  const [tableData, setTableData] = useState({ rows: 3, cols: 3 });
+  const [tableData, setTableData] = useState({ 
+    rows: 3, 
+    cols: 3, 
+    data: Array(4).fill(null).map(() => Array(3).fill(""))
+  });
   const [isUploading, setIsUploading] = useState(false);
+
+  const handleTableDimensionChange = (type: 'rows' | 'cols', value: number) => {
+    const newVal = Math.max(1, Math.min(value, 15));
+    setTableData(prev => {
+      const newRows = type === 'rows' ? newVal : prev.rows;
+      const newCols = type === 'cols' ? newVal : prev.cols;
+      
+      const newData = Array(newRows + 1).fill(null).map((_, rIdx) => 
+        Array(newCols).fill("").map((_, cIdx) => 
+          prev.data[rIdx]?.[cIdx] || ""
+        )
+      );
+      return { rows: newRows, cols: newCols, data: newData };
+    });
+  };
+
+  const handleCellChange = (rIdx: number, cIdx: number, val: string) => {
+    const newData = [...tableData.data];
+    newData[rIdx] = [...newData[rIdx]];
+    newData[rIdx][cIdx] = val;
+    setTableData(prev => ({ ...prev, data: newData }));
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -102,12 +128,12 @@ const MarkdownEditor = ({ value, onChange, placeholder }: MarkdownEditorProps) =
   const addTable = () => {
     let table = "\n";
     // Header
-    table += "| " + Array(tableData.cols).fill("Header").join(" | ") + " |\n";
+    table += "| " + tableData.data[0].map(c => c || "Header").join(" | ") + " |\n";
     // Separator
     table += "| " + Array(tableData.cols).fill("---").join(" | ") + " |\n";
     // Rows
-    for (let i = 0; i < tableData.rows; i++) {
-      table += "| " + Array(tableData.cols).fill("Cell").join(" | ") + " |\n";
+    for (let i = 1; i <= tableData.rows; i++) {
+      table += "| " + tableData.data[i].map(c => c || "Cell").join(" | ") + " |\n";
     }
     table += "\n";
     insertAtCursor(table);
@@ -172,7 +198,17 @@ const MarkdownEditor = ({ value, onChange, placeholder }: MarkdownEditorProps) =
       <div className="min-h-[400px]">
         {isPreview ? (
           <div className="p-6 prose prose-zinc dark:prose-invert max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]} 
+              rehypePlugins={[rehypeRaw]}
+              components={{
+                table: ({node, ...props}) => (
+                  <div className="w-full overflow-x-auto pb-4 mb-4 border border-border/40 rounded-xl">
+                    <table className="min-w-full m-0" {...props} />
+                  </div>
+                )
+              }}
+            >
               {value || "_Nothing to preview_"}
             </ReactMarkdown>
           </div>
@@ -267,21 +303,39 @@ const MarkdownEditor = ({ value, onChange, placeholder }: MarkdownEditorProps) =
       </Dialog>
 
       <Dialog open={dialogOpen === "table"} onOpenChange={(open) => !open && setDialogOpen(null)}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Insert Table</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Insert Content Table</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="space-y-2">
-              <Label>Rows</Label>
-              <Input type="number" value={tableData.rows} onChange={(e) => setTableData({...tableData, rows: parseInt(e.target.value) || 1})} />
+              <Label>Rows (excluding header)</Label>
+              <Input type="number" min="1" max="15" value={tableData.rows} onChange={(e) => handleTableDimensionChange('rows', parseInt(e.target.value) || 1)} />
             </div>
             <div className="space-y-2">
               <Label>Columns</Label>
-              <Input type="number" value={tableData.cols} onChange={(e) => setTableData({...tableData, cols: parseInt(e.target.value) || 1})} />
+              <Input type="number" min="1" max="10" value={tableData.cols} onChange={(e) => handleTableDimensionChange('cols', parseInt(e.target.value) || 1)} />
             </div>
           </div>
-          <DialogFooter>
+          
+          <div className="space-y-0 overflow-x-auto border border-border rounded-lg bg-card">
+             {tableData.data.map((row, rIdx) => (
+                <div key={rIdx} className={`flex min-w-max divide-x divide-border border-b border-border last:border-b-0 ${rIdx === 0 ? 'bg-muted/50' : ''}`}>
+                    {row.map((cell, cIdx) => (
+                        <div key={cIdx} className="p-1 min-w-[120px] max-w-[200px] flex-1">
+                            <Input 
+                                value={cell} 
+                                onChange={(e) => handleCellChange(rIdx, cIdx, e.target.value)} 
+                                placeholder={rIdx === 0 ? `Header ${cIdx + 1}` : `Row ${rIdx} Cell ${cIdx + 1}`}
+                                className={`border-none shadow-none h-9 hover:bg-muted/30 focus-visible:ring-1 focus-visible:bg-transparent ${rIdx === 0 ? 'font-bold uppercase tracking-wider text-xs' : 'text-sm'}`}
+                            />
+                        </div>
+                    ))}
+                </div>
+             ))}
+          </div>
+
+          <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setDialogOpen(null)}>Cancel</Button>
-            <Button onClick={addTable}>Insert Table</Button>
+            <Button onClick={addTable}>Insert Data into Document</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

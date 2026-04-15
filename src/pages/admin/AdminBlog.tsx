@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import MarkdownEditor from "@/components/MarkdownEditor";
+import { ConfirmAction } from "@/components/ConfirmAction";
 
 type BlogPost = {
   id: string;
@@ -194,19 +195,19 @@ const AdminBlog = () => {
     return (
       <AdminLayout>
         <div className="animate-fade-in pb-20">
-          <div className="flex items-center justify-between gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => setView("list")} className="rounded-full">
+              <Button variant="ghost" size="icon" onClick={() => setView("list")} className="rounded-full shrink-0">
                 <ArrowLeft size={20} />
               </Button>
-              <div>
-                <h1 className="text-2xl font-heading text-foreground">{editingId ? "Edit Post" : "Compose New Post"}</h1>
-                <p className="text-xs text-muted-foreground">{editingId ? `ID: ${editingId}` : "Drafting your next piece"}</p>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-heading text-foreground truncate">{editingId ? "Edit Post" : "Compose New Post"}</h1>
+                <p className="text-xs text-muted-foreground truncate">{editingId ? `ID: ${editingId}` : "Drafting your next piece"}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => setView("list")}>Cancel</Button>
-              <Button onClick={() => upsert.mutate()} disabled={upsert.isPending || uploading} className="min-w-[120px]">
+            <div className="flex items-center gap-2 self-stretch sm:self-auto w-full sm:w-auto">
+              <Button variant="outline" onClick={() => setView("list")} className="flex-1 sm:flex-none">Cancel</Button>
+              <Button onClick={() => upsert.mutate()} disabled={upsert.isPending || uploading} className="flex-1 sm:flex-none min-w-[120px]">
                 {upsert.isPending ? "Saving..." : <><Send size={16} className="mr-2" /> {editingId ? "Update Post" : "Create Post"}</>}
               </Button>
             </div>
@@ -343,12 +344,12 @@ const AdminBlog = () => {
 
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-heading text-foreground">Blog Management</h1>
           <p className="text-sm text-muted-foreground">Draft and publish stories for the community</p>
         </div>
-        <Button onClick={() => setView("editor")} className="gap-2">
+        <Button onClick={() => setView("editor")} className="gap-2 w-full sm:w-auto">
           <Plus size={16} /> Write New Post
         </Button>
       </div>
@@ -417,9 +418,11 @@ const AdminBlog = () => {
                       <DropdownMenuItem onClick={() => togglePublish.mutate({ id: p.id, publish: !p.is_published })}>
                         {p.is_published ? <><EyeOff size={14} className="mr-2" /> Unpublish</> : <><Eye size={14} className="mr-2" /> Publish Now</>}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { if (confirm("Permanently delete this post?")) deleteMut.mutate(p.id); }} className="text-destructive focus:text-destructive">
-                        <Trash2 size={14} className="mr-2" /> Delete Post
-                      </DropdownMenuItem>
+                      <ConfirmAction onConfirm={() => deleteMut.mutate(p.id)} description="Permanently delete this post?">
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                          <Trash2 size={14} className="mr-2" /> Delete Post
+                        </DropdownMenuItem>
+                      </ConfirmAction>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
