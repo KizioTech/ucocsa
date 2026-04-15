@@ -214,7 +214,7 @@ const BlogPost = () => {
                         {(post.profiles?.full_name || post.author_name || "U")[0].toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-green-500 border-4 border-background rounded-full" />
+                    <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-primary border-4 border-background rounded-full" />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
