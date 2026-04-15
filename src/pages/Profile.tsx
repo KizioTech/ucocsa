@@ -113,15 +113,15 @@ const Profile = () => {
 
   return (
     <Layout>
-      <section className="py-24 bg-stone-50 min-h-screen">
+      <section className="py-24 bg-muted/30 min-h-screen">
         <div className="container max-w-5xl mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Profile Info Card */}
             <div className="lg:col-span-1">
-              <Card className="bg-white shadow-sm border-stone-200 sticky top-24">
-                <CardHeader className="text-center pb-8 border-b border-stone-100">
+              <Card className="bg-card shadow-sm border-border sticky top-24">
+                <CardHeader className="text-center pb-8 border-b border-border">
                   <div className="flex justify-center mb-6 relative group">
-                    <Avatar className="h-32 w-32 ring-4 ring-primary/20 ring-offset-4 ring-offset-stone-950">
+                    <Avatar className="h-32 w-32 ring-4 ring-primary/20 ring-offset-4 ring-offset-background">
                       <AvatarImage src={avatarUrl} />
                       <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-bold">
                         {initials}
@@ -140,10 +140,10 @@ const Profile = () => {
                       </label>
                     )}
                   </div>
-                  <CardTitle className="font-heading text-3xl text-stone-900">
+                  <CardTitle className="font-heading text-3xl text-foreground">
                     {isOwnProfile ? "My Profile" : profile?.full_name}
                   </CardTitle>
-                  <CardDescription className="text-stone-500 mt-2">
+                  <CardDescription className="text-muted-foreground mt-2">
                     {isOwnProfile ? user?.email : "Community Member"}
                   </CardDescription>
                 </CardHeader>
@@ -151,21 +151,21 @@ const Profile = () => {
                   {isOwnProfile ? (
                     <>
                       <div className="space-y-3">
-                        <label className="text-xs font-bold uppercase tracking-widest text-stone-500 flex items-center gap-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                           <User size={14} /> Full Name
                         </label>
                         <Input
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           placeholder="Your full name"
-                          className="bg-stone-50 border-stone-200 text-stone-900"
+                          className="bg-muted border-border text-foreground"
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-xs font-bold uppercase tracking-widest text-stone-500 flex items-center gap-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                           <Mail size={14} /> Email Address
                         </label>
-                        <Input value={user?.email || ""} disabled className="bg-stone-50 border-stone-200 text-stone-900 opacity-60" />
+                        <Input value={user?.email || ""} disabled className="bg-muted border-border text-foreground opacity-60" />
                       </div>
                       <Button onClick={handleSave} disabled={saving} className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20">
                         {saving ? "Saving..." : "Update Profile"}
@@ -173,13 +173,13 @@ const Profile = () => {
                     </>
                   ) : (
                     <div className="space-y-6">
-                       <div className="flex items-center justify-between p-4 rounded-2xl bg-stone-50 border border-stone-100">
+                       <div className="flex items-center justify-between p-4 rounded-2xl bg-muted border border-border">
                           <div className="text-center flex-1">
-                             <p className="text-2xl font-bold text-stone-900">{authorPosts.length}</p>
-                             <p className="text-[10px] uppercase font-bold text-stone-500 tracking-widest">Articles</p>
+                              <p className="text-2xl font-bold text-foreground">{authorPosts.length}</p>
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Articles</p>
                           </div>
                        </div>
-                       <Button variant="outline" className="w-full rounded-2xl border-stone-200 text-stone-900 hover:bg-stone-50" asChild>
+                       <Button variant="outline" className="w-full rounded-2xl border-border text-foreground hover:bg-muted" asChild>
                           <Link to="/messages">Message {profile?.full_name?.split(" ")[0]}</Link>
                        </Button>
                     </div>
@@ -191,7 +191,7 @@ const Profile = () => {
             {/* Content / Blog Posts */}
             <div className="lg:col-span-2 space-y-8">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-heading text-stone-900">
+                <h2 className="text-2xl font-heading text-foreground">
                   {isOwnProfile ? "Your Contributions" : "Published Articles"}
                 </h2>
                 <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5">
@@ -201,9 +201,9 @@ const Profile = () => {
 
               <div className="grid gap-6">
                 {authorPosts.length === 0 ? (
-                  <Card className="bg-white shadow-sm border-stone-200 p-12 text-center">
-                    <BookOpen size={48} className="mx-auto text-stone-300 mb-4" />
-                    <p className="text-stone-500">No articles published yet.</p>
+                  <Card className="bg-card shadow-sm border-border p-12 text-center">
+                    <BookOpen size={48} className="mx-auto text-muted-foreground/30 mb-4" />
+                    <p className="text-muted-foreground">No articles published yet.</p>
                   </Card>
                 ) : (
                   authorPosts.map((post) => (
@@ -213,7 +213,7 @@ const Profile = () => {
                       animate={{ opacity: 1, x: 0 }}
                     >
                       <Link to={`/blog/${post.slug}`}>
-                        <Card className="bg-white shadow-sm border-stone-200 hover:border-primary/40 hover:shadow-md transition-all group overflow-hidden">
+                        <Card className="bg-card shadow-sm border-border hover:border-primary/40 hover:shadow-md transition-all group overflow-hidden">
                           <div className="flex flex-col md:flex-row gap-6 p-6">
                             {post.cover_image_url && (
                               <div className="w-full md:w-48 h-32 rounded-2xl overflow-hidden shrink-0">
@@ -222,9 +222,9 @@ const Profile = () => {
                             )}
                             <div className="flex-1 min-w-0 py-2">
                               <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-2">{post.category}</p>
-                              <h3 className="text-xl font-heading text-stone-900 mb-3 group-hover:text-primary transition-colors truncate">{post.title}</h3>
-                              <p className="text-stone-500 text-sm line-clamp-2 leading-relaxed mb-4">{post.excerpt}</p>
-                              <div className="flex items-center gap-4 text-[10px] font-bold text-stone-500 uppercase tracking-widest">
+                              <h3 className="text-xl font-heading text-foreground mb-3 group-hover:text-primary transition-colors truncate">{post.title}</h3>
+                              <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed mb-4">{post.excerpt}</p>
+                              <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                                 <span className="flex items-center gap-1.5"><Calendar size={12} /> {new Date(post.published_at).toLocaleDateString()}</span>
                                 <span className="flex items-center gap-1.5 ml-auto text-primary group-hover:translate-x-1 transition-transform">Read Article <ArrowRight size={12} /></span>
                               </div>
