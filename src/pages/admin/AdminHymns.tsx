@@ -39,7 +39,7 @@ const AdminHymns = () => {
   const { data: hymns = [], isLoading } = useQuery({
     queryKey: ["hymns"],
     queryFn: async () => {
-      const { data, error } = await (supabase.from("hymns") as any).select("*").order("id");
+      const { data, error } = await (supabase as any).from("hymns").select("*").order("id");
       if (error) throw error;
       return data as Hymn[];
     },
@@ -58,10 +58,10 @@ const AdminHymns = () => {
         bio: h.bio || null,
       };
       if (isNew) {
-        const { error } = await (supabase.from("hymns") as any).insert(payload);
+        const { error } = await (supabase as any).from("hymns").insert(payload);
         if (error) throw error;
       } else {
-        const { error } = await (supabase.from("hymns") as any).update(payload).eq("id", h.id!);
+        const { error } = await (supabase as any).from("hymns").update(payload).eq("id", h.id!);
         if (error) throw error;
       }
     },
@@ -75,7 +75,7 @@ const AdminHymns = () => {
 
   const deleteMut = useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await (supabase.from("hymns") as any).delete().eq("id", id);
+      const { error } = await (supabase as any).from("hymns").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["hymns"] }); toast.success("Hymn deleted."); },

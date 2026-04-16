@@ -83,7 +83,7 @@ const Hymns: React.FC = () => {
   const { data: hymns = [], isLoading } = useQuery({
     queryKey: ["hymns"],
     queryFn: async () => {
-      const { data, error } = await (supabase.from("hymns") as any).select("*").order("id");
+      const { data, error } = await (supabase as any).from("hymns").select("*").order("id");
       if (error) throw error;
       return data as Hymn[];
     },
