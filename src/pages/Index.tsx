@@ -122,14 +122,14 @@ const Index = () => {
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <p className="text-gold-light text-sm uppercase tracking-[0.2em] mb-4 font-medium">University of Malawi</p>
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-heading text-cream mb-6 leading-tight">
-              Welcome to <span className="text-gradient-gold">UCOCSA</span>
+              Welcome to <span className="text-gradient-gold">UNIMA Church of Christ</span>
             </h1>
             <p className="text-cream/80 text-lg md:text-xl max-w-2xl mx-auto mb-8">
               A Christ-centered community nurturing faith, academic excellence, and lifelong fellowship at UNIMA.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-10">
-              <Link to="/join" className="px-8 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:bg-gold-dark transition-colors shadow-lg">
+              <Link to="/auth" className="px-8 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:bg-gold-dark transition-colors shadow-lg">
                 Join Our Community
               </Link>
               <Link to="/about" className="px-8 py-3 rounded-lg border border-cream/30 text-cream font-medium hover:bg-cream/10 transition-colors">
@@ -318,7 +318,7 @@ const Index = () => {
             <p className="text-secondary-foreground/70 max-w-xl mx-auto mb-8">
               Join hundreds of UNIMA students who have found faith, friendship, and purpose through UCOCSA.
             </p>
-            <Link to="/join" className="inline-block px-8 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:bg-gold-dark transition-colors shadow-lg">
+            <Link to="/auth" className="inline-block px-8 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:bg-gold-dark transition-colors shadow-lg">
               Become a Member
             </Link>
           </motion.div>

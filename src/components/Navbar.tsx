@@ -30,7 +30,6 @@ const growLinks = [
   { to: "/prayer", label: "Prayer" },
   { to: "/blog", label: "Blog" },
   { to: "/give", label: "Give" },
-  { to: "/hymns", label: "🎵 Hymns" },
 ];
 
 const allMobileLinks = [
@@ -41,7 +40,6 @@ const allMobileLinks = [
   { to: "/resources", label: "Resources" },
   { to: "/prayer", label: "Prayer" },
   { to: "/blog", label: "Blog" },
-  { to: "/hymns", label: "🎵 Hymns" },
   { to: "/contact", label: "Contact" },
   { to: "/give", label: "Give" },
 ];
@@ -114,10 +112,10 @@ const Navbar = () => {
           <NavDropdown label="Community" links={communityLinks} />
           <NavDropdown label="Grow" links={growLinks} />
           <Link
-            to="/join"
+            to="/hymns"
             className="ml-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-gold-dark transition-colors"
           >
-            Join Us
+            Hymns
           </Link>
           {user ? (
             <DropdownMenu>
@@ -228,9 +226,9 @@ const Navbar = () => {
                 )}
               </AnimatePresence>
 
-              <Link to="/join" onClick={() => setOpen(false)}
+              <Link to="/hymns" onClick={() => setOpen(false)}
                 className="mt-2 px-4 py-3 rounded-lg bg-primary text-primary-foreground text-sm font-semibold text-center">
-                Join Us
+                🎵 Hymns
               </Link>
               {user && (
                 <>

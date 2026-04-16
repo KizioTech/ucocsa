@@ -41,10 +41,10 @@ const Footer = () => (
               Prayer
             </Link>
             <Link
-              to="/join"
+              to="/hymns"
               className="hover:text-secondary-foreground transition-colors"
             >
-              Join Us
+              Hymns
             </Link>
           </div>
         </div>

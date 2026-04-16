@@ -17,7 +17,7 @@ const Prayer = lazy(() => import("./pages/Prayer.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 const Give = lazy(() => import("./pages/Give.tsx"));
-const Join = lazy(() => import("./pages/Join.tsx"));
+
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard.tsx"));
 const AdminEvents = lazy(() => import("./pages/admin/AdminEvents.tsx"));
@@ -67,7 +67,7 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/give" element={<Give />} />
               <Route path="/gallery" element={<Gallery />} />
-              <Route path="/join" element={<Join />} />
+
               <Route path="/hymns" element={<Hymns />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/profile" element={<Profile />} />

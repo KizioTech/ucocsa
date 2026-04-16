@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 
 const contactInfo = [
-  { icon: MapPin, label: "Location", value: "University of Malawi, Zomba Campus, Malawi" },
+  { icon: MapPin, label: "Location", value: "University of Malawi, Zomba, Malawi" },
   { icon: Mail, label: "Email", value: "ucocsa@unima.ac.mw" },
   { icon: Phone, label: "Phone", value: "+265 999 123 456" },
   { icon: Clock, label: "Office Hours", value: "Mon–Fri, 8:00 AM – 5:00 PM" },
@@ -120,11 +120,11 @@ const Contact = () => {
 
             {/* Map & Social */}
             <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-              <SectionHeading title="Find Us" subtitle="University of Malawi, Zomba Campus" />
+              <SectionHeading title="Find Us" subtitle="University of Malawi, Zomba, Malawi" />
               <div className="mt-6 rounded-xl overflow-hidden border border-border aspect-video">
                 <iframe
-                  title="UCOCSA Location"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3846.5!2d35.3194!3d-15.3875!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTXCsDIzJzE1LjAiUyAzNcKwMTknMDkuOCJF!5e0!3m2!1sen!2smw!4v1"
+                  title="University of Malawi Church of Christ"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3846.764491682991!2d35.33467057433773!3d-15.389235785196002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x18d904e65366a83f%3A0xf1f319d6a0c14cf9!2sUniversity%20of%20Malawi!5e0!3m2!1sen!2smw!4v1776366362988!5m2!1sen!2smw"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
