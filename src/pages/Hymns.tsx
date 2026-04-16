@@ -2,13 +2,16 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Search, Heart, Grid, ArrowLeft, Music, Clock, Star, Book, Gift,
+  Search, Heart, ArrowLeft, Music, Star, Book, Gift,
   Sunrise, Shield, Flame, Info, X, Play, ChevronDown,
-  MonitorPlay, Type
+  MonitorPlay, Type, Menu, BookOpen
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+// ─── Types & Metadata ─────────────────────────────────────────────────────────
 
 interface Hymn {
   id: number;
@@ -38,15 +41,12 @@ const GREETINGS: Record<string, Array<{ message: string; verse: string }>> = {
   morning: [
     { message: "Good morning! It's a beautiful day to sing.", verse: '"Let everything that has breath praise the Lord." – Psalm 150:6' },
     { message: "Rise and shine! Let's praise the Lord.", verse: '"This is the day that the Lord has made; let us rejoice and be glad in it." – Psalm 118:24' },
-    { message: "His mercies are new every morning.", verse: '"Because of the Lord\'s great love we are not consumed, for his compassions never fail." – Lamentations 3:22–23' },
   ],
   afternoon: [
     { message: "Good afternoon! Let's praise together.", verse: '"My heart, O God, is steadfast; I will sing and make music with all my soul." – Psalm 108:1' },
-    { message: "Keep the song in your heart this afternoon.", verse: '"Sing to the Lord, for he has done glorious things." – Isaiah 12:5' },
   ],
   evening: [
     { message: "Good evening! Let's worship in song.", verse: '"From the rising of the sun to its setting, the name of the Lord is to be praised." – Psalm 113:3' },
-    { message: "Close your day with songs of thanksgiving.", verse: '"Let them give thanks to the Lord for his unfailing love." – Psalm 107:21' },
   ],
 };
 
@@ -57,59 +57,99 @@ function getGreeting() {
   return list[Math.floor(Math.random() * list.length)];
 }
 
-// ── Extracted HymnCard (stable reference) ──────────────────────────────────
-const HymnCardItem = React.memo(({
-  hymn, isFavorite, onOpen, onToggleFavorite, isOnline
-}: {
-  hymn: Hymn; isFavorite: boolean; onOpen: (h: Hymn) => void;
-  onToggleFavorite: (id: number) => void; isOnline: boolean;
-}) => {
-  const Icon = CATEGORY_META[hymn.category || ""]?.icon || Music;
-  return (
-    <Card
-      onClick={() => onOpen(hymn)}
-      className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:border-primary group"
-    >
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="text-lg font-bold text-primary bg-primary/10 px-3 py-1 rounded-lg font-heading">
-              {hymn.id}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Icon className="h-4 w-4 text-primary" />
-              <span className="text-xs text-muted-foreground">{hymn.category}</span>
-            </div>
-          </div>
-          <button
-            onClick={e => { e.stopPropagation(); onToggleFavorite(hymn.id); }}
-            className={`p-1.5 rounded-full transition-colors ${
-              isFavorite ? "text-destructive" : "text-muted-foreground hover:text-destructive"
-            }`}
-          >
-            <Heart className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`} />
-          </button>
-        </div>
-        <h3 className="text-base font-bold mb-1 text-foreground font-heading">{hymn.title}</h3>
-        <p className="text-sm text-muted-foreground mb-2">by {hymn.author}</p>
-        <p className="text-sm italic text-muted-foreground truncate">"{hymn.first_line}"</p>
-        <div className="mt-3 flex items-center justify-between">
-          {isOnline && hymn.youtube_id && (
-            <span className="text-xs text-primary flex items-center gap-1">
-              <Play className="h-3 w-3" /> Video available
-            </span>
-          )}
-          <span className="text-xs text-muted-foreground ml-auto">
-            {hymn.verses.length} verse{hymn.verses.length !== 1 ? "s" : ""}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
-  );
-});
-HymnCardItem.displayName = "HymnCardItem";
+// ─── Presentation Overlay ─────────────────────────────────────────────────
 
-// ── Verse renderer ──────────────────────────────────────────────────────────
+const PresentationOverlay = ({ hymn, onClose }: { hymn: Hymn; onClose: () => void }) => {
+  const slides = useMemo(() => {
+    const seq: { type: string; text: string; title: string }[] = [];
+    const hasGlobalChorus = hymn.verses.length > 1 && hymn.verses[0].includes('\n \n') && !hymn.verses[1].includes('\n \n');
+
+    let globalChorusText = "";
+    if (hasGlobalChorus) {
+      globalChorusText = hymn.verses[0].split(/\n \n/).slice(1).join('\n \n');
+    }
+
+    hymn.verses.forEach((verse, i) => {
+      const parts = verse.split(/\n \n/);
+
+      if (hasGlobalChorus && i === 0) {
+        seq.push({ type: 'verse', text: parts[0], title: `Verse 1` });
+        seq.push({ type: 'chorus', text: globalChorusText, title: `Chorus` });
+      } else if (hasGlobalChorus && i > 0) {
+        seq.push({ type: 'verse', text: verse, title: `Verse ${i + 1}` });
+        seq.push({ type: 'chorus', text: globalChorusText, title: `Chorus` });
+      } else {
+        seq.push({ type: 'verse', text: parts[0], title: `Verse ${i + 1}` });
+        if (parts.length > 1) {
+          seq.push({ type: 'chorus', text: parts.slice(1).join('\n \n'), title: `Chorus` });
+        }
+      }
+    });
+
+    return seq.filter(s => s.text.trim().length > 0);
+  }, [hymn.verses]);
+
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+        setIdx(i => Math.min(i + 1, slides.length - 1));
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        setIdx(i => Math.max(i - 1, 0));
+      } else if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [slides.length, onClose]);
+
+  if (slides.length === 0) return null;
+
+  const slide = slides[idx];
+
+  return (
+    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-slate-900 via-neutral-900 to-stone-900 transition-colors animate-in fade-in duration-300">
+      <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-6 right-6 text-white/50 hover:bg-white/10 hover:text-white">
+        <X className="h-8 w-8" />
+      </Button>
+
+      <div className="absolute top-8 left-8 text-left text-white/50 hidden sm:block">
+        <h1 className="text-xl sm:text-2xl font-bold font-heading text-white/80">{hymn.id}. {hymn.title}</h1>
+        <p className="text-sm">Slide {idx + 1} of {slides.length}</p>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-center max-w-5xl w-full">
+        <div className="text-sm font-semibold text-primary uppercase mb-6 tracking-[0.2em]">{slide.title}</div>
+        <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-relaxed font-medium whitespace-pre-line text-center drop-shadow-md pb-16">
+          {slide.text}
+        </div>
+      </div>
+
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-6">
+        <Button
+          variant="outline" size="lg"
+          onClick={() => setIdx(i => Math.max(i - 1, 0))}
+          disabled={idx === 0}
+          className="bg-transparent border-white/20 text-white hover:bg-white/10 disabled:opacity-30 w-32"
+        >
+          Back
+        </Button>
+        <Button
+          variant="outline" size="lg"
+          onClick={() => setIdx(i => Math.min(i + 1, slides.length - 1))}
+          disabled={idx === slides.length - 1}
+          className="bg-transparent border-white/20 text-white hover:bg-white/10 disabled:opacity-30 w-32"
+        >
+          Next
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// ── Verse renderer for document view ───────────────────────────────────────
 const renderVerse = (text: string) => {
   const parts = text.split(/\n \n/);
   if (parts.length > 1) {
@@ -127,10 +167,9 @@ const renderVerse = (text: string) => {
 
 // ─── Main Component ────────────────────────────────────────────────────────
 const Hymns: React.FC = () => {
-  const [view, setView] = useState<"home" | "hymn" | "recent" | "favorites">("home");
   const [selected, setSelected] = useState<Hymn | null>(null);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
+  const [listMode, setListMode] = useState<"all" | "favorites">("all");
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [recent, setRecent] = useState<Hymn[]>([]);
   const [fontSize, setFontSize] = useState(16);
@@ -138,14 +177,14 @@ const Hymns: React.FC = () => {
   const [presentationMode, setPresentationMode] = useState(false);
   const [showYouTube, setShowYouTube] = useState(false);
   const [showHymnInfo, setShowHymnInfo] = useState(false);
-  const [showNumberGrid, setShowNumberGrid] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [greeting] = useState(getGreeting);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const scrollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const savedScrollY = useRef(0);
+  const detailRef = useRef<HTMLDivElement>(null);
 
-  const { data: hymns = [], isLoading } = useQuery({
+  const { data: hymns = [] } = useQuery({
     queryKey: ["hymns"],
     queryFn: async () => {
       const { data, error } = await (supabase as any).from("hymns").select("*").order("id");
@@ -171,7 +210,11 @@ const Hymns: React.FC = () => {
 
   useEffect(() => {
     if (autoScroll) {
-      scrollIntervalRef.current = setInterval(() => window.scrollBy(0, 1), 80);
+      scrollIntervalRef.current = setInterval(() => {
+        if (detailRef.current) {
+          detailRef.current.scrollBy(0, 1);
+        }
+      }, 80);
     } else {
       if (scrollIntervalRef.current) clearInterval(scrollIntervalRef.current);
     }
@@ -187,340 +230,249 @@ const Hymns: React.FC = () => {
   }, []);
 
   const openHymn = useCallback((hymn: Hymn) => {
-    savedScrollY.current = window.scrollY;
     setSelected(hymn);
-    setView("hymn");
     setShowYouTube(false);
+    setAutoScroll(false);
     setRecent(prev => [hymn, ...prev.filter(h => h.id !== hymn.id)].slice(0, 10));
-    window.scrollTo(0, 0);
+    setIsMobileSidebarOpen(false);
+    if (detailRef.current) detailRef.current.scrollTo(0, 0);
   }, []);
 
-  const goHome = useCallback(() => {
-    setView("home");
-    setTimeout(() => window.scrollTo(0, savedScrollY.current), 0);
-  }, []);
-
-  const filteredHymns = useMemo(() => hymns.filter(h => {
+  const filteredHymns = useMemo(() => {
+    let source = listMode === "favorites" ? hymns.filter(h => favorites.has(h.id)) : hymns;
     const q = search.toLowerCase();
-    const matchSearch = !q ||
-      h.title.toLowerCase().includes(q) ||
-      (h.author || "").toLowerCase().includes(q) ||
-      (h.first_line || "").toLowerCase().includes(q) ||
-      h.id.toString() === search;
-    const matchCat = !category || h.category === category;
-    return matchSearch && matchCat;
-  }), [hymns, search, category]);
+    if (q) {
+      source = source.filter(h =>
+        h.title.toLowerCase().includes(q) ||
+        (h.author || "").toLowerCase().includes(q) ||
+        (h.first_line || "").toLowerCase().includes(q) ||
+        h.id.toString() === search
+      );
+    }
+    return source;
+  }, [hymns, search, listMode, favorites]);
 
-  const categories = useMemo(() =>
-    [...new Set(hymns.map(h => h.category).filter(Boolean))] as string[],
-  [hymns]);
 
-  const favoriteHymns = useMemo(() =>
-    hymns.filter(h => favorites.has(h.id)),
-  [hymns, favorites]);
-
-  const hymn = selected;
-
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
-
-      {/* ── HEADER ──────────────────────────────────────────────────────── */}
-      <header className="sticky top-[64px] z-30 border-b border-border bg-background/95 backdrop-blur-sm shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            {view !== "home" && (
-              <Button variant="ghost" size="icon" onClick={goHome}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            )}
-            <Button variant="ghost" size="icon" onClick={() => setShowNumberGrid(true)} title="Quick access by number">
-              <Grid className="h-5 w-5 text-primary" />
-            </Button>
-            <h1 className="text-lg font-bold tracking-wide text-primary font-heading hidden sm:block">
-              SING UNTO THE LORD
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            {!isOnline && (
-              <span className="text-xs px-2 py-0.5 bg-destructive/20 text-destructive rounded-full">Offline</span>
-            )}
-          </div>
+  // ─── Sidebar Content ───────────────────────────────────────────────────────
+  const SidebarContents = () => (
+    <div className="flex flex-col h-full overflow-hidden bg-card border-r border-border drop-shadow-sm z-20">
+      <div className="p-4 border-b border-border bg-card shrink-0 space-y-4">
+        <h2 className="font-heading font-bold text-xl text-primary flex items-center gap-2">
+          <BookOpen className="h-5 w-5" /> Hymn Library
+        </h2>
+        
+        <div className="flex text-xs rounded-md border border-border p-0.5 bg-muted">
+          <button
+            onClick={() => setListMode('all')}
+            className={`flex-1 py-1.5 rounded-sm font-semibold transition-colors ${listMode === 'all' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            All Hymns
+          </button>
+          <button
+            onClick={() => setListMode('favorites')}
+            className={`flex-1 py-1.5 rounded-sm font-semibold transition-colors ${listMode === 'favorites' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Favorites ({favorites.size})
+          </button>
         </div>
-      </header>
 
-      {/* ── HOME VIEW ───────────────────────────────────────────────────── */}
-      {view === "home" && (
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="text-center mb-8 py-8 px-4 rounded-2xl bg-gradient-to-br from-secondary/20 to-primary/10 border border-primary/20">
-            <p className="text-2xl font-bold text-primary mb-2 font-heading">{greeting.message}</p>
-            <p className="text-sm italic text-muted-foreground">{greeting.verse}</p>
-          </div>
-
-          <div className="relative max-w-2xl mx-auto mb-6">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search by title, author, number or first line..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-input rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-transparent outline-none"
-            />
-          </div>
-
-          <div className="flex flex-wrap gap-2 justify-center mb-8">
-            <button
-              onClick={() => setCategory("")}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                category === "" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >All</button>
-            {categories.map(cat => {
-              const Icon = CATEGORY_META[cat]?.icon || Music;
-              return (
-                <button key={cat} onClick={() => setCategory(cat)}
-                  className={`px-4 py-1.5 rounded-full text-sm flex items-center gap-1.5 font-medium transition-colors ${
-                    category === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />{cat}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="flex gap-4 mb-6">
-            <button onClick={() => setView("recent")} className="flex items-center gap-2 text-sm text-primary hover:underline font-medium">
-              <Clock className="h-4 w-4" /> Recently Viewed
-            </button>
-            <button onClick={() => setView("favorites")} className="flex items-center gap-2 text-sm text-primary hover:underline font-medium">
-              <Star className="h-4 w-4" /> Favorites ({favorites.size})
-            </button>
-          </div>
-
-          {favoriteHymns.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Star className="h-4 w-4 text-primary" /> Favorites
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {favoriteHymns.slice(0, 3).map(h => (
-                  <HymnCardItem key={`fav-${h.id}`} hymn={h} isFavorite={true} onOpen={openHymn} onToggleFavorite={toggleFavorite} isOnline={isOnline} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            {search || category ? `Results (${filteredHymns.length})` : `All Hymns (${hymns.length})`}
-          </h2>
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="h-40 rounded-xl animate-pulse bg-muted" />
-              ))}
-            </div>
-          ) : filteredHymns.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredHymns.map(h => (
-                <HymnCardItem key={h.id} hymn={h} isFavorite={favorites.has(h.id)} onOpen={openHymn} onToggleFavorite={toggleFavorite} isOnline={isOnline} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <Music className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No hymns found for "{search}".</p>
-            </div>
-          )}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search title, number, author..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 text-sm bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+          />
         </div>
-      )}
+      </div>
 
-      {/* ── HYMN DETAIL VIEW ────────────────────────────────────────────── */}
-      {view === "hymn" && hymn && (
-        presentationMode ? (
-          <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-8 text-center bg-secondary">
-            <Button variant="ghost" size="icon" onClick={() => setPresentationMode(false)}
-              className="absolute top-4 right-4 text-secondary-foreground hover:bg-secondary-foreground/10">
-              <X className="h-6 w-6" />
-            </Button>
-            <h1 className="text-4xl sm:text-5xl font-bold text-secondary-foreground mb-2 font-heading">{hymn.title}</h1>
-            <p className="text-xl text-secondary-foreground/60 mb-10">by {hymn.author}</p>
-            <div className="space-y-10 max-w-4xl w-full text-left">
-              {hymn.verses.map((v, i) => (
-                <div key={i}>
-                  <div className="text-xs font-semibold text-primary uppercase mb-2">Verse {i + 1}</div>
-                  <div className="text-2xl text-secondary-foreground leading-relaxed">{renderVerse(v)}</div>
-                </div>
-              ))}
-            </div>
+      <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
+        {filteredHymns.length === 0 ? (
+          <div className="text-center p-6 text-muted-foreground text-sm">
+            {listMode === 'favorites' ? 'No favorites yet.' : 'No hymns found.'}
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
-            <div className="flex items-start justify-between mb-6 gap-4">
-              <div className="flex items-center gap-4">
-                <div className="text-3xl font-bold text-primary bg-primary/10 px-4 py-2 rounded-xl font-heading">{hymn.id}</div>
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground font-heading">{hymn.title}</h1>
-                  <p className="text-muted-foreground">by {hymn.author}</p>
-                  {hymn.category && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary mt-1 inline-block font-medium">
-                      {hymn.category}
-                    </span>
-                  )}
+          filteredHymns.map(h => (
+            <button
+              key={h.id}
+              onClick={() => openHymn(h)}
+              className={`w-full flex items-start gap-3 px-3 py-2.5 text-left rounded-md transition-colors text-sm border-l-2 ${
+                selected?.id === h.id
+                  ? 'bg-primary/10 border-primary text-foreground font-semibold'
+                  : 'border-transparent hover:bg-muted text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <span className={`w-6 shrink-0 font-bold ${selected?.id === h.id ? 'text-primary' : 'text-muted-foreground/60'}`}>{h.id}.</span>
+              <span className="truncate flex-1 font-medium">{h.title}</span>
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden">
+      <Navbar />
+
+      <div className="flex-1 flex pt-[64px] h-full overflow-hidden">
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:flex w-72 lg:w-80 flex-col shrink-0">
+          <SidebarContents />
+        </aside>
+
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col min-w-0 h-full relative" ref={detailRef}>
+          
+          {/* Internal Header for Mobile Trigger & Actions */}
+          <header className="h-14 flex items-center justify-between px-4 border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-30 shrink-0">
+            <div className="flex items-center gap-2">
+              <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="md:hidden -ml-2 text-foreground">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[85vw] max-w-[320px] p-0 border-r border-border">
+                  <SidebarContents />
+                </SheetContent>
+              </Sheet>
+              
+              {selected && (
+                <div className="font-heading font-bold text-lg md:text-xl truncate flex items-center gap-2 text-foreground">
+                  <span className="text-primary hidden sm:inline">{selected.id}.</span> {selected.title}
                 </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Button variant="ghost" size="icon" onClick={() => toggleFavorite(hymn.id)}
-                  className={favorites.has(hymn.id) ? "text-destructive" : "text-muted-foreground hover:text-destructive"}>
-                  <Heart className={`h-6 w-6 ${favorites.has(hymn.id) ? "fill-current" : ""}`} />
+              )}
+            </div>
+
+            {selected && (
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" onClick={() => toggleFavorite(selected.id)}
+                  className={favorites.has(selected.id) ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-destructive"}>
+                  <Heart className={`h-5 w-5 ${favorites.has(selected.id) ? "fill-current" : ""}`} />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => setShowHymnInfo(true)} className="text-muted-foreground hover:text-primary">
-                  <Info className="h-6 w-6" />
+                  <Info className="h-5 w-5" />
                 </Button>
               </div>
-            </div>
+            )}
+          </header>
 
-            <div className="flex flex-wrap gap-3 mb-6">
-              <div className="flex items-center gap-2 bg-muted rounded-lg px-3 py-1.5">
-                <button onClick={() => setFontSize(s => Math.max(12, s - 2))} className="text-sm font-bold text-foreground hover:text-primary">
-                  <Type className="h-3.5 w-3.5" />
-                </button>
-                <span className="text-xs text-muted-foreground px-1">{fontSize}px</span>
-                <button onClick={() => setFontSize(s => Math.min(28, s + 2))} className="text-sm font-bold text-foreground hover:text-primary">
-                  <Type className="h-4.5 w-4.5" />
-                </button>
+          <div className="flex-1 overflow-y-auto w-full p-4 md:p-8 pb-32">
+            {!selected ? (
+              <div className="h-full flex flex-col items-center justify-center opacity-80 max-w-md mx-auto text-center px-4">
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                  <Music className="h-10 w-10 text-primary" />
+                </div>
+                <h2 className="text-3xl font-bold font-heading text-foreground mb-3">{greeting.message}</h2>
+                <p className="text-muted-foreground text-lg mb-8 italic">{greeting.verse}</p>
+                <p className="text-sm font-medium text-muted-foreground/60">Select a hymn from the library to begin reading or presenting in full screen.</p>
+                <Button className="mt-6 md:hidden" onClick={() => setIsMobileSidebarOpen(true)}>
+                  <BookOpen className="mr-2 h-4 w-4" /> Browse Library
+                </Button>
               </div>
-              <Button variant={autoScroll ? "default" : "outline"} size="sm" onClick={() => setAutoScroll(a => !a)}>
-                <ChevronDown className="h-4 w-4 mr-1" />
-                {autoScroll ? "Stop Scroll" : "Auto-scroll"}
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => setPresentationMode(true)}>
-                <MonitorPlay className="h-4 w-4 mr-1" />
-                Presentation
-              </Button>
-            </div>
-
-            {isOnline && hymn.youtube_id && (
-              <div className="mb-8">
-                {!showYouTube ? (
-                  <Button variant="destructive" size="sm" onClick={() => setShowYouTube(true)}>
-                    <Play className="h-4 w-4 mr-1" /> Show Video
-                  </Button>
-                ) : (
-                  <div>
-                    <div className="rounded-xl overflow-hidden shadow-lg">
-                      <iframe
-                        width="100%" height="315"
-                        src={`https://www.youtube.com/embed/${hymn.youtube_id}?autoplay=1`}
-                        title={hymn.title}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    </div>
-                    <button onClick={() => setShowYouTube(false)} className="mt-2 text-xs text-muted-foreground hover:text-foreground underline">
-                      Hide video
+            ) : (
+              <div className="max-w-3xl mx-auto">
+                <div className="flex flex-wrap items-center gap-3 mb-8 pb-6 border-b border-border">
+                  <div className="flex items-center gap-2 bg-muted rounded-lg px-3 py-1.5 border border-border">
+                    <button onClick={() => setFontSize(s => Math.max(12, s - 2))} className="text-sm font-bold text-foreground hover:text-primary transition-colors">
+                      <Type className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="text-xs text-muted-foreground px-2 font-mono">{fontSize}px</span>
+                    <button onClick={() => setFontSize(s => Math.min(28, s + 2))} className="text-sm font-bold text-foreground hover:text-primary transition-colors">
+                      <Type className="h-4.5 w-4.5" />
                     </button>
                   </div>
+                  
+                  <Button variant={autoScroll ? "default" : "secondary"} size="sm" onClick={() => setAutoScroll(a => !a)}>
+                    <ChevronDown className="h-4 w-4 mr-1" />
+                    {autoScroll ? "Stop Scroll" : "Auto Scroll"}
+                  </Button>
+                  
+                  <Button variant="default" size="sm" onClick={() => setPresentationMode(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <MonitorPlay className="h-4 w-4 mr-1.5" />
+                    Presentation
+                  </Button>
+                  
+                  {isOnline && selected.youtube_id && (
+                     <Button variant="destructive" size="sm" onClick={() => setShowYouTube(!showYouTube)}>
+                       <Play className="h-3.5 w-3.5 mr-1.5" /> {showYouTube ? "Hide Video" : "Watch Video"}
+                     </Button>
+                  )}
+                </div>
+
+                {showYouTube && selected.youtube_id && (
+                  <div className="mb-10 w-full rounded-2xl overflow-hidden shadow-xl border border-border bg-black">
+                    <iframe
+                      width="100%" height="350"
+                      src={`https://www.youtube.com/embed/${selected.youtube_id}?autoplay=1`}
+                      title={selected.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
                 )}
+
+                <div className="space-y-8">
+                  {selected.verses.map((verse, i) => (
+                    <Card key={i} className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+                      <CardContent className="p-6 md:p-8">
+                        <div className="text-xs font-bold text-primary uppercase tracking-[0.15em] mb-4">Verse {i + 1}</div>
+                        <div style={{ fontSize: `${fontSize}px` }} className="leading-relaxed text-foreground font-medium">
+                          {renderVerse(verse)}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             )}
-
-            <div className="space-y-6">
-              {hymn.verses.map((verse, i) => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <div className="text-xs font-semibold text-primary uppercase mb-3 tracking-wider">Verse {i + 1}</div>
-                    <div style={{ fontSize: `${fontSize}px` }} className="leading-relaxed text-foreground">
-                      {renderVerse(verse)}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </div>
-        )
+        </main>
+      </div>
+
+      {presentationMode && selected && (
+        <PresentationOverlay hymn={selected} onClose={() => setPresentationMode(false)} />
       )}
 
-      {/* ── RECENTLY VIEWED ─────────────────────────────────────────────── */}
-      {view === "recent" && (
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-foreground font-heading">
-            <Clock className="h-5 w-5 text-primary" /> Recently Viewed
-          </h2>
-          {recent.length === 0 ? (
-            <p className="text-muted-foreground py-12 text-center">Nothing viewed yet.</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recent.map(h => (
-                <HymnCardItem key={`rec-${h.id}`} hymn={h} isFavorite={favorites.has(h.id)} onOpen={openHymn} onToggleFavorite={toggleFavorite} isOnline={isOnline} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── FAVORITES VIEW ──────────────────────────────────────────────── */}
-      {view === "favorites" && (
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-foreground font-heading">
-            <Star className="h-5 w-5 text-primary" /> Favorites
-          </h2>
-          {favoriteHymns.length === 0 ? (
-            <p className="text-muted-foreground py-12 text-center">No favorites yet. Tap the heart on any hymn!</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {favoriteHymns.map(h => (
-                <HymnCardItem key={`fav-${h.id}`} hymn={h} isFavorite={true} onOpen={openHymn} onToggleFavorite={toggleFavorite} isOnline={isOnline} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── NUMBER GRID MODAL ───────────────────────────────────────────── */}
-      {showNumberGrid && (
-        <div className="fixed inset-0 z-50 bg-foreground/50 flex items-center justify-center p-4" onClick={() => setShowNumberGrid(false)}>
-          <div className="w-full max-w-4xl max-h-[85vh] overflow-y-auto rounded-2xl p-6 shadow-2xl bg-background border border-border" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-foreground font-heading">Quick Access — Select Hymn #</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowNumberGrid(false)}>
+      {showHymnInfo && selected && (
+        <div className="fixed inset-0 z-[70] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowHymnInfo(false)}>
+          <div className="w-full max-w-md overflow-hidden rounded-2xl p-6 shadow-2xl bg-card border border-border" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6 border-b border-border pb-4">
+              <h2 className="text-xl font-bold text-foreground font-heading pr-4">About the Hymn</h2>
+              <Button variant="ghost" size="icon" onClick={() => setShowHymnInfo(false)} className="shrink-0 -mr-2">
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
-              {hymns.map(h => (
-                <button key={h.id} onClick={() => { setShowNumberGrid(false); setTimeout(() => openHymn(h), 80); }}
-                  className="h-12 rounded-lg border-2 border-border font-bold text-sm transition-all hover:scale-105 hover:border-primary hover:text-primary bg-card text-card-foreground">
-                  {h.id}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── HYMN INFO MODAL ─────────────────────────────────────────────── */}
-      {showHymnInfo && hymn && (
-        <div className="fixed inset-0 z-50 bg-foreground/50 flex items-center justify-center p-4" onClick={() => setShowHymnInfo(false)}>
-          <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl p-6 shadow-2xl bg-background border border-border" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-foreground font-heading">About "{hymn.title}"</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowHymnInfo(false)}>
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            <p className="text-foreground"><strong>Author:</strong> {hymn.author}</p>
-            <p className="text-foreground"><strong>Category:</strong> {hymn.category}</p>
-            <p className="italic mt-2 text-muted-foreground">"{hymn.first_line}"</p>
-            {hymn.bio && (
-              <div className="mt-4 p-4 rounded-xl bg-muted text-sm leading-relaxed">
-                <p className="font-semibold mb-1 text-primary">Composer Biography</p>
-                <p className="text-foreground">{hymn.bio}</p>
+            <div className="space-y-4">
+              <div>
+                 <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wider mb-1">Title</p>
+                 <p className="font-heading font-bold text-lg">{selected.title}</p>
               </div>
-            )}
-            <Button onClick={() => setShowHymnInfo(false)} className="mt-6 w-full">
-              Close
+              <div>
+                 <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wider mb-1">Author / Composer</p>
+                 <p>{selected.author || 'Unknown'}</p>
+              </div>
+              {selected.category && (
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wider mb-1">Category</p>
+                  <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full inline-block">{selected.category}</span>
+                </div>
+              )}
+              {selected.bio && (
+                <div className="pt-2">
+                  <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wider mb-1.5">Background</p>
+                  <div className="p-3.5 rounded-xl bg-muted text-sm leading-relaxed text-muted-foreground border border-border/50">
+                    {selected.bio}
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button onClick={() => setShowHymnInfo(false)} className="mt-8 w-full font-semibold">
+              Close Detail
             </Button>
           </div>
         </div>
