@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Search, Heart, ArrowLeft, Music, Star, Book, Gift,
+  Search, Heart, ArrowLeft, Music, Star, Book, Baby,
   Sunrise, Shield, Flame, Info, X, Play, ChevronDown,
   MonitorPlay, Type, Menu, BookOpen, Sparkles
 } from "lucide-react";
@@ -11,7 +11,7 @@ import { backgroundImages } from "@/data/backgrounds";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 // ─── Types & Metadata ─────────────────────────────────────────────────────────
 
@@ -27,16 +27,15 @@ interface Hymn {
 }
 
 const CATEGORY_META: Record<string, { icon: React.ElementType; label: string }> = {
-  Traditional: { icon: Book, label: "Traditional" },
-  Christmas:   { icon: Gift, label: "Christmas" },
-  Easter:      { icon: Sunrise, label: "Easter" },
-  Worship:     { icon: Music, label: "Worship" },
-  worship:     { icon: Music, label: "Worship" },
-  Praise:      { icon: Music, label: "Praise" },
-  Assurance:   { icon: Shield, label: "Assurance" },
-  Faith:       { icon: Heart, label: "Faith" },
-  Hope:        { icon: Star, label: "Hope" },
-  Salvation:   { icon: Flame, label: "Salvation" },
+  Traditional:  { icon: Book,    label: "Traditional"  },
+  Birth:        { icon: Baby,    label: "Birth"        },
+  Resurrection: { icon: Sunrise, label: "Resurrection" },
+  Worship:      { icon: Music,   label: "Worship"      },
+  Praise:       { icon: Music,   label: "Praise"       },
+  Assurance:    { icon: Shield,  label: "Assurance"    },
+  Faith:        { icon: Heart,   label: "Faith"        },
+  Hope:         { icon: Star,    label: "Hope"         },
+  Salvation:    { icon: Flame,   label: "Salvation"    },
 };
 
 const GREETINGS: Record<string, Array<{ message: string; verse: string }>> = {
@@ -182,9 +181,8 @@ const Hymns: React.FC = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [greeting] = useState(getGreeting);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * backgroundImages.length));
-  const [prevBgIndex, setPrevBgIndex] = useState<number | null>(null);
-  const [bgFading, setBgFading] = useState(false);
+  // Chosen once on mount — changes only on page refresh, never during the session
+  const [bgIndex] = useState(() => Math.floor(Math.random() * backgroundImages.length));
 
   const scrollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
@@ -198,6 +196,22 @@ const Hymns: React.FC = () => {
     },
   });
 
+  // Backgrounds from DB (managed by admins); falls back to bundled list while loading
+  const { data: dbBackgrounds = [] } = useQuery({
+    queryKey: ["hymn_backgrounds"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("hymn_backgrounds")
+        .select("url")
+        .order("sort_order");
+      if (error) throw error;
+      return (data as { url: string }[]).map((r) => r.url);
+    },
+  });
+
+  const backgrounds = dbBackgrounds.length > 0 ? dbBackgrounds : backgroundImages;
+  const bgUrl = backgrounds[bgIndex % backgrounds.length];
+
   useEffect(() => {
     setFavorites(new Set(JSON.parse(localStorage.getItem("hymnFavorites") || "[]")));
     setRecent(JSON.parse(localStorage.getItem("hymnRecent") || "[]"));
@@ -209,19 +223,7 @@ const Hymns: React.FC = () => {
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
   }, []);
 
-  // Cycle background image every 7 seconds when no hymn is selected
-  useEffect(() => {
-    if (selected) return;
-    const interval = setInterval(() => {
-      setBgFading(true);
-      setTimeout(() => {
-        setPrevBgIndex(bgIndex);
-        setBgIndex(i => (i + 1) % backgroundImages.length);
-        setBgFading(false);
-      }, 800);
-    }, 7000);
-    return () => clearInterval(interval);
-  }, [selected, bgIndex]);
+  // Background is static per session — no auto-cycling; changes only on full page refresh.
 
   useEffect(() => { localStorage.setItem("hymnFavorites", JSON.stringify([...favorites])); }, [favorites]);
   useEffect(() => { localStorage.setItem("hymnRecent", JSON.stringify(recent)); }, [recent]);
@@ -336,6 +338,13 @@ const Hymns: React.FC = () => {
     <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden">
       <Navbar />
 
+      {/* Persistent mobile sidebar — always mounted so Browse Library works from the welcome screen */}
+      <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+        <SheetContent side="left" className="w-[85vw] max-w-[320px] p-0 border-r border-border">
+          <SidebarContents />
+        </SheetContent>
+      </Sheet>
+
       <div className="flex-1 flex pt-[64px] h-full overflow-hidden">
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex w-72 lg:w-80 flex-col shrink-0">
@@ -349,16 +358,14 @@ const Hymns: React.FC = () => {
           {selected && (
           <header className="h-14 flex items-center justify-between px-4 border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-30 shrink-0">
             <div className="flex items-center gap-2">
-              <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden -ml-2 text-foreground">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-[85vw] max-w-[320px] p-0 border-r border-border">
-                  <SidebarContents />
-                </SheetContent>
-              </Sheet>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden -ml-2 text-foreground"
+                onClick={() => setIsMobileSidebarOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
               
               {selected && (
                 <div className="font-heading font-bold text-lg md:text-xl truncate flex items-center gap-2 text-foreground">
@@ -386,46 +393,16 @@ const Hymns: React.FC = () => {
               /* ── Full-page cover ── */
               <div className="absolute inset-0 overflow-hidden">
 
-                {/* Previous image (fades out) */}
-                {prevBgIndex !== null && (
-                  <img
-                    key={`prev-${prevBgIndex}`}
-                    src={backgroundImages[prevBgIndex]}
-                    alt=""
-                    aria-hidden
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[800ms]"
-                    style={{ opacity: bgFading ? 0 : 1 }}
-                  />
-                )}
-
-                {/* Current image (fades in) */}
+                {/* Static background — randomly selected once per page load */}
                 <img
-                  key={`curr-${bgIndex}`}
-                  src={backgroundImages[bgIndex]}
+                  src={bgUrl}
                   alt="Worship background"
-                  className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[800ms]"
-                  style={{ opacity: bgFading ? 0 : 1 }}
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
 
                 {/* Layered gradient overlays */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/30" />
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-transparent to-transparent" />
-
-                {/* Slide indicator dots — bottom right */}
-                <div className="absolute bottom-8 right-8 flex gap-2 z-20">
-                  {backgroundImages.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => { setPrevBgIndex(bgIndex); setBgIndex(i); }}
-                      className={`rounded-full transition-all duration-300 ${
-                        i === bgIndex
-                          ? 'w-6 h-2.5 bg-primary'
-                          : 'w-2.5 h-2.5 bg-white/30 hover:bg-white/60'
-                      }`}
-                      aria-label={`Background ${i + 1}`}
-                    />
-                  ))}
-                </div>
 
                 {/* Content — centered vertically */}
                 <div className="relative z-10 h-full flex flex-col items-start justify-end p-8 md:p-16 pb-24">
@@ -474,14 +451,9 @@ const Hymns: React.FC = () => {
                       Select a hymn from the library to begin.
                     </p>
                     <Button
-                      className="md:hidden relative overflow-hidden bg-primary text-primary-foreground px-6 py-2.5 rounded-full font-semibold shadow-xl shadow-primary/40 hover:shadow-primary/60 transition-shadow"
+                      className="md:hidden bg-primary text-primary-foreground px-6 py-2.5 rounded-full font-semibold shadow-xl shadow-primary/40 hover:shadow-primary/60 transition-shadow active:scale-95"
                       onClick={() => setIsMobileSidebarOpen(true)}
                     >
-                      <motion.span
-                        className="absolute inset-0 rounded-full bg-white/20"
-                        animate={{ scale: [1, 1.7], opacity: [0.3, 0] }}
-                        transition={{ duration: 1.8, repeat: Infinity }}
-                      />
                       <BookOpen className="mr-2 h-4 w-4" /> Browse Library
                     </Button>
                   </motion.div>
