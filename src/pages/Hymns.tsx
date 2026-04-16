@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Search, Heart, ArrowLeft, Music, Star, Book, Gift,
   Sunrise, Shield, Flame, Info, X, Play, ChevronDown,
-  MonitorPlay, Type, Menu, BookOpen
+  MonitorPlay, Type, Menu, BookOpen, Sparkles
 } from "lucide-react";
+import { backgroundImages } from "@/data/backgrounds";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -180,6 +182,9 @@ const Hymns: React.FC = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [greeting] = useState(getGreeting);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * backgroundImages.length));
+  const [prevBgIndex, setPrevBgIndex] = useState<number | null>(null);
+  const [bgFading, setBgFading] = useState(false);
 
   const scrollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
@@ -203,6 +208,20 @@ const Hymns: React.FC = () => {
     window.addEventListener("offline", off);
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
   }, []);
+
+  // Cycle background image every 7 seconds when no hymn is selected
+  useEffect(() => {
+    if (selected) return;
+    const interval = setInterval(() => {
+      setBgFading(true);
+      setTimeout(() => {
+        setPrevBgIndex(bgIndex);
+        setBgIndex(i => (i + 1) % backgroundImages.length);
+        setBgFading(false);
+      }, 800);
+    }, 7000);
+    return () => clearInterval(interval);
+  }, [selected, bgIndex]);
 
   useEffect(() => { localStorage.setItem("hymnFavorites", JSON.stringify([...favorites])); }, [favorites]);
   useEffect(() => { localStorage.setItem("hymnRecent", JSON.stringify(recent)); }, [recent]);
@@ -324,9 +343,10 @@ const Hymns: React.FC = () => {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col min-w-0 h-full relative" ref={detailRef}>
+        <main className="flex-1 flex flex-col min-w-0 h-full relative">
           
-          {/* Internal Header for Mobile Trigger & Actions */}
+          {/* Internal Header for Mobile Trigger & Actions — only shown when a hymn is selected */}
+          {selected && (
           <header className="h-14 flex items-center justify-between px-4 border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-30 shrink-0">
             <div className="flex items-center gap-2">
               <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
@@ -359,21 +379,116 @@ const Hymns: React.FC = () => {
               </div>
             )}
           </header>
+          )}
 
-          <div className="flex-1 overflow-y-auto w-full p-4 md:p-8 pb-32">
+          <div className="flex-1 relative overflow-hidden">
             {!selected ? (
-              <div className="h-full flex flex-col items-center justify-center opacity-80 max-w-md mx-auto text-center px-4">
-                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-                  <Music className="h-10 w-10 text-primary" />
+              /* ── Full-page cover ── */
+              <div className="absolute inset-0 overflow-hidden">
+
+                {/* Previous image (fades out) */}
+                {prevBgIndex !== null && (
+                  <img
+                    key={`prev-${prevBgIndex}`}
+                    src={backgroundImages[prevBgIndex]}
+                    alt=""
+                    aria-hidden
+                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[800ms]"
+                    style={{ opacity: bgFading ? 0 : 1 }}
+                  />
+                )}
+
+                {/* Current image (fades in) */}
+                <img
+                  key={`curr-${bgIndex}`}
+                  src={backgroundImages[bgIndex]}
+                  alt="Worship background"
+                  className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[800ms]"
+                  style={{ opacity: bgFading ? 0 : 1 }}
+                />
+
+                {/* Layered gradient overlays */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/30" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-transparent to-transparent" />
+
+                {/* Slide indicator dots — bottom right */}
+                <div className="absolute bottom-8 right-8 flex gap-2 z-20">
+                  {backgroundImages.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setPrevBgIndex(bgIndex); setBgIndex(i); }}
+                      className={`rounded-full transition-all duration-300 ${
+                        i === bgIndex
+                          ? 'w-6 h-2.5 bg-primary'
+                          : 'w-2.5 h-2.5 bg-white/30 hover:bg-white/60'
+                      }`}
+                      aria-label={`Background ${i + 1}`}
+                    />
+                  ))}
                 </div>
-                <h2 className="text-3xl font-bold font-heading text-foreground mb-3">{greeting.message}</h2>
-                <p className="text-muted-foreground text-lg mb-8 italic">{greeting.verse}</p>
-                <p className="text-sm font-medium text-muted-foreground/60">Select a hymn from the library to begin reading or presenting in full screen.</p>
-                <Button className="mt-6 md:hidden" onClick={() => setIsMobileSidebarOpen(true)}>
-                  <BookOpen className="mr-2 h-4 w-4" /> Browse Library
-                </Button>
+
+                {/* Content — centered vertically */}
+                <div className="relative z-10 h-full flex flex-col items-start justify-end p-8 md:p-16 pb-24">
+
+                  {/* Time-of-day badge */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="mb-5"
+                  >
+                    <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-background/75 backdrop-blur-md text-xs font-bold text-primary shadow-lg border border-primary/25 uppercase tracking-widest">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      {new Date().getHours() < 12 ? "Morning Worship" : new Date().getHours() < 18 ? "Afternoon Praise" : "Evening Devotion"}
+                    </span>
+                  </motion.div>
+
+                  {/* Greeting */}
+                  <motion.h2
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                    className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-heading text-white leading-tight mb-5 drop-shadow-xl max-w-3xl"
+                  >
+                    {greeting.message}
+                  </motion.h2>
+
+                  {/* Bible verse */}
+                  <motion.p
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.28, duration: 0.6 }}
+                    className="text-white/80 text-base md:text-lg italic leading-relaxed border-l-4 border-primary pl-5 max-w-2xl"
+                  >
+                    {greeting.verse}
+                  </motion.p>
+
+                  {/* Hint + mobile CTA */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.45, duration: 0.5 }}
+                    className="mt-8 flex items-center gap-4"
+                  >
+                    <p className="text-white/40 text-sm font-medium hidden sm:block">
+                      Select a hymn from the library to begin.
+                    </p>
+                    <Button
+                      className="md:hidden relative overflow-hidden bg-primary text-primary-foreground px-6 py-2.5 rounded-full font-semibold shadow-xl shadow-primary/40 hover:shadow-primary/60 transition-shadow"
+                      onClick={() => setIsMobileSidebarOpen(true)}
+                    >
+                      <motion.span
+                        className="absolute inset-0 rounded-full bg-white/20"
+                        animate={{ scale: [1, 1.7], opacity: [0.3, 0] }}
+                        transition={{ duration: 1.8, repeat: Infinity }}
+                      />
+                      <BookOpen className="mr-2 h-4 w-4" /> Browse Library
+                    </Button>
+                  </motion.div>
+                </div>
               </div>
             ) : (
+              <div ref={detailRef} className="flex-1 overflow-y-auto w-full h-full p-4 md:p-8 pb-32">
               <div className="max-w-3xl mx-auto">
                 <div className="flex flex-wrap items-center gap-3 mb-8 pb-6 border-b border-border">
                   <div className="flex items-center gap-2 bg-muted rounded-lg px-3 py-1.5 border border-border">
@@ -428,6 +543,7 @@ const Hymns: React.FC = () => {
                     </Card>
                   ))}
                 </div>
+              </div>
               </div>
             )}
           </div>
