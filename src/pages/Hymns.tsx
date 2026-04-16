@@ -4,10 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Search, Heart, ArrowLeft, Music, Star, Book, Baby,
-  Sunrise, Shield, Flame, Info, X, Play, ChevronDown,
+  Sunrise, Shield, Flame, Info, X, Play, Pause, ChevronDown,
   MonitorPlay, Type, Menu, BookOpen, Sparkles
 } from "lucide-react";
 import { backgroundImages } from "@/data/backgrounds";
+import { Slider } from "@/components/ui/slider";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -112,7 +113,10 @@ const PresentationOverlay = ({ hymn, onClose }: { hymn: Hymn; onClose: () => voi
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-slate-900 via-neutral-900 to-stone-900 transition-colors animate-in fade-in duration-300">
-      <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-6 right-6 text-white/50 hover:bg-white/10 hover:text-white">
+      <Button variant="ghost" size="icon" onClick={() => {
+        onClose();
+        if (document.fullscreenElement) document.exitFullscreen().catch(console.error);
+      }} className="absolute top-6 right-6 text-white/50 hover:bg-white/10 hover:text-white">
         <X className="h-8 w-8" />
       </Button>
 
@@ -176,16 +180,27 @@ const Hymns: React.FC = () => {
   const [fontSize, setFontSize] = useState(16);
   const [autoScroll, setAutoScroll] = useState(false);
   const [presentationMode, setPresentationMode] = useState(false);
-  const [showYouTube, setShowYouTube] = useState(false);
+  const [youtubeMode, setYoutubeMode] = useState<'none' | 'audio' | 'video'>('none');
+  const [isPlaying, setIsPlaying] = useState(false);
   const [showHymnInfo, setShowHymnInfo] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [greeting] = useState(getGreeting);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [scrollSpeed, setScrollSpeed] = useState(3);
   // Chosen once on mount — changes only on page refresh, never during the session
   const [bgIndex] = useState(() => Math.floor(Math.random() * backgroundImages.length));
 
   const scrollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Sync isPlaying state to the native YouTube iframe
+  useEffect(() => {
+    if (youtubeMode !== 'none' && iframeRef.current && iframeRef.current.contentWindow) {
+      const command = isPlaying ? 'playVideo' : 'pauseVideo';
+      iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: 'command', func: command }), '*');
+    }
+  }, [isPlaying, youtubeMode]);
 
   const { data: hymns = [] } = useQuery({
     queryKey: ["hymns"],
@@ -231,16 +246,28 @@ const Hymns: React.FC = () => {
 
   useEffect(() => {
     if (autoScroll) {
+      const delay = 150 - (scrollSpeed * 20); // speed 1 = 130ms, 5 = 50ms
       scrollIntervalRef.current = setInterval(() => {
         if (detailRef.current) {
           detailRef.current.scrollBy(0, 1);
         }
-      }, 80);
+      }, delay);
     } else {
       if (scrollIntervalRef.current) clearInterval(scrollIntervalRef.current);
     }
     return () => { if (scrollIntervalRef.current) clearInterval(scrollIntervalRef.current); };
-  }, [autoScroll]);
+  }, [autoScroll, scrollSpeed]);
+
+  // Handle Fullscreen exit natively syncing to presentationMode state
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && presentationMode) {
+        setPresentationMode(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, [presentationMode]);
 
   const toggleFavorite = useCallback((id: number) => {
     setFavorites(prev => {
@@ -252,7 +279,8 @@ const Hymns: React.FC = () => {
 
   const openHymn = useCallback((hymn: Hymn) => {
     setSelected(hymn);
-    setShowYouTube(false);
+    setYoutubeMode('none');
+    setIsPlaying(false);
     setAutoScroll(false);
     setRecent(prev => [hymn, ...prev.filter(h => h.id !== hymn.id)].slice(0, 10));
     setIsMobileSidebarOpen(false);
@@ -473,28 +501,80 @@ const Hymns: React.FC = () => {
                     </button>
                   </div>
                   
-                  <Button variant={autoScroll ? "default" : "secondary"} size="sm" onClick={() => setAutoScroll(a => !a)}>
-                    <ChevronDown className="h-4 w-4 mr-1" />
-                    {autoScroll ? "Stop Scroll" : "Auto Scroll"}
-                  </Button>
+                  <div className="flex items-center gap-2 bg-background border border-border rounded-md pr-2">
+                    <Button variant={autoScroll ? "default" : "ghost"} size="sm" onClick={() => setAutoScroll(a => !a)} className="rounded-r-none border-r border-border hover:bg-muted">
+                      <ChevronDown className="h-4 w-4 mr-1" />
+                      {autoScroll ? "Stop Scroll" : "Auto Scroll"}
+                    </Button>
+                    {autoScroll && (
+                      <div className="w-24 px-2 hidden sm:block">
+                        <Slider value={[scrollSpeed]} min={1} max={5} step={1} onValueChange={(v) => setScrollSpeed(v[0])} aria-label="Scroll Speed" />
+                      </div>
+                    )}
+                  </div>
                   
-                  <Button variant="default" size="sm" onClick={() => setPresentationMode(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button variant="default" size="sm" onClick={() => {
+                    setPresentationMode(true);
+                    document.documentElement.requestFullscreen().catch(console.error);
+                  }} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <MonitorPlay className="h-4 w-4 mr-1.5" />
                     Presentation
                   </Button>
                   
                   {isOnline && selected.youtube_id && (
-                     <Button variant="destructive" size="sm" onClick={() => setShowYouTube(!showYouTube)}>
-                       <Play className="h-3.5 w-3.5 mr-1.5" /> {showYouTube ? "Hide Video" : "Watch Video"}
-                     </Button>
+                     <div className="flex items-center bg-background border border-border rounded-md shadow-sm h-8 mt-0.5 animate-in fade-in">
+                       <Button variant={youtubeMode !== 'none' ? "secondary" : "ghost"} size="sm" 
+                               onClick={() => {
+                                 if (youtubeMode === 'none') {
+                                   setYoutubeMode('audio');
+                                   setIsPlaying(true);
+                                 } else {
+                                   setYoutubeMode('none');
+                                   setIsPlaying(false);
+                                 }
+                               }} 
+                               className={`rounded-none rounded-l-md h-full px-3 ${youtubeMode !== 'none' ? 'border-r border-border hover:bg-destructive hover:text-white' : 'hover:bg-muted'}`}>
+                         <Music className="h-4 w-4 mr-1.5" /> {youtubeMode !== 'none' ? "Stop Tune" : "Listen to Tune"}
+                       </Button>
+                       
+                       {youtubeMode === 'audio' && (
+                         <div className="flex items-center px-1 animate-in fade-in slide-in-from-left-2 duration-300">
+                           <button onClick={() => setIsPlaying(!isPlaying)} className="p-1.5 hover:bg-muted text-foreground transition-colors rounded outline-none flex items-center justify-center" title={isPlaying ? "Pause Audio" : "Play Audio"}>
+                             {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 fill-current" />}
+                           </button>
+                           {/* Switch to video icon */}
+                           <button onClick={() => setYoutubeMode('video')} className="p-1.5 hover:bg-muted text-muted-foreground transition-colors rounded outline-none ml-0.5 flex items-center justify-center" title="Switch to Video View">
+                             <MonitorPlay className="h-4 w-4" />
+                           </button>
+                         </div>
+                       )}
+                       
+                       {youtubeMode === 'video' && (
+                         <div className="flex items-center px-1 animate-in fade-in slide-in-from-left-2 duration-300">
+                           {/* Switch to audio icon */}
+                           <button onClick={() => setYoutubeMode('audio')} className="p-1.5 hover:bg-muted text-muted-foreground transition-colors rounded outline-none flex items-center justify-center" title="Switch to Audio Only">
+                             <Music className="h-4 w-4" />
+                           </button>
+                         </div>
+                       )}
+                     </div>
                   )}
                 </div>
 
-                {showYouTube && selected.youtube_id && (
-                  <div className="mb-10 w-full rounded-2xl overflow-hidden shadow-xl border border-border bg-black">
+                {/* Single Player Instance for both audio and video modes (Native iframe) */}
+                {selected.youtube_id && (
+                  <div className={`transition-all duration-500 origin-top flex justify-center ${
+                    youtubeMode === 'video' 
+                      ? "mb-10 w-full rounded-2xl overflow-hidden shadow-xl border border-border bg-black h-[350px] opacity-100 scale-100 pointer-events-auto" 
+                      : youtubeMode === 'audio'
+                        ? "h-0 opacity-0 scale-95 pointer-events-none -mb-2"
+                        : "hidden"
+                  }`}>
                     <iframe
-                      width="100%" height="350"
-                      src={`https://www.youtube.com/embed/${selected.youtube_id}?autoplay=1`}
+                      ref={iframeRef}
+                      width="100%"
+                      height="100%"
+                      src={`https://www.youtube.com/embed/${selected.youtube_id}?enablejsapi=1&autoplay=0&controls=${youtubeMode === 'video' ? 1 : 0}`}
                       title={selected.title}
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -523,8 +603,13 @@ const Hymns: React.FC = () => {
       </div>
 
       {presentationMode && selected && (
-        <PresentationOverlay hymn={selected} onClose={() => setPresentationMode(false)} />
+        <PresentationOverlay hymn={selected} onClose={() => {
+          setPresentationMode(false);
+          if (document.fullscreenElement) document.exitFullscreen().catch(console.error);
+        }} />
       )}
+
+      {/* The floating mini-player has been removed as per Option A choice */}
 
       {showHymnInfo && selected && (
         <div className="fixed inset-0 z-[70] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowHymnInfo(false)}>
