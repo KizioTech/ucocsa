@@ -104,12 +104,27 @@ const Events = () => {
   };
 
   const handleSharePoster = (evt: any) => {
+    const details: Record<string, string> = {};
+    if (evt.is_fixed && evt.program) {
+      const p = evt.program;
+      if (p.service_type === "sunday") {
+        if (p.convener) details["Convener"] = p.convener;
+        if (p.teaching) details["Teaching"] = p.teaching;
+        if (p.preaching) details["Preaching"] = p.preaching;
+        if (p.alter_call) details["Altar Call"] = p.alter_call;
+      } else {
+        if (p.facilitator) details["Facilitator"] = p.facilitator;
+        if (p.leading_verses) details["Scripture"] = p.leading_verses;
+      }
+    }
+
     setSharingPoster({
       title: evt.title,
       theme: evt.program?.theme,
       date: formatDate(evt.event_date),
       time: formatTime(evt.event_time),
       location: evt.location || "UNIMA Campus",
+      details: Object.keys(details).length > 0 ? details : null,
       type: "program"
     });
   };

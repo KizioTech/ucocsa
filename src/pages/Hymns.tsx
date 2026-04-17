@@ -407,10 +407,15 @@ const Hymns: React.FC = () => {
 
   const handleSharePoster = () => {
     if (!selected) return;
+    const details: Record<string, string> = {};
+    if (selected.verses.length > 1) details["Verse 2"] = selected.verses[1].split(/\n \n/)[0];
+    if (selected.verses.length > 2) details["Verse 3"] = selected.verses[2].split(/\n \n/)[0];
+
     setSharingPoster({
       title: `${selected.id}. ${selected.title}`,
       subtitle: selected.verses[0].split(/\n \n/)[0],
       theme: selected.author,
+      details: Object.keys(details).length > 0 ? details : null,
       type: "hymn"
     });
   };
