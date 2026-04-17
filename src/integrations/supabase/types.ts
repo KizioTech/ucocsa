@@ -325,6 +325,72 @@ export type Database = {
           },
         ]
       }
+      hymn_backgrounds: {
+        Row: {
+          created_at: string
+          id: string
+          sort_order: number
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sort_order?: number
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sort_order?: number
+          url?: string
+        }
+        Relationships: []
+      }
+      hymns: {
+        Row: {
+          author: string | null
+          bio: string | null
+          category: string | null
+          created_at: string
+          first_line: string | null
+          id: number
+          is_approved: boolean
+          submitted_by: string | null
+          title: string
+          updated_at: string
+          verses: string[]
+          youtube_id: string | null
+        }
+        Insert: {
+          author?: string | null
+          bio?: string | null
+          category?: string | null
+          created_at?: string
+          first_line?: string | null
+          id?: number
+          is_approved?: boolean
+          submitted_by?: string | null
+          title: string
+          updated_at?: string
+          verses?: string[]
+          youtube_id?: string | null
+        }
+        Update: {
+          author?: string | null
+          bio?: string | null
+          category?: string | null
+          created_at?: string
+          first_line?: string | null
+          id?: number
+          is_approved?: boolean
+          submitted_by?: string | null
+          title?: string
+          updated_at?: string
+          verses?: string[]
+          youtube_id?: string | null
+        }
+        Relationships: []
+      }
       members: {
         Row: {
           created_at: string
