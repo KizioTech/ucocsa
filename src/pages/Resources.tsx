@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { BookOpen, Download, ExternalLink } from "lucide-react";
 import Layout from "@/components/Layout";
 import SectionHeading from "@/components/SectionHeading";
+import SEO from "@/components/SEO";
 
 const studyNotes = [
   { title: "Romans Series — Week 1: The Gospel", topic: "Salvation", book: "Romans", date: "March 2026" },
@@ -18,6 +19,10 @@ const externalResources = [
 
 const Resources = () => (
   <Layout>
+    <SEO 
+      title="Bible Study Resources"
+      description="Access Bible study materials, devotionals, and spiritual growth tools from UCOCSA."
+    />
     <section className="py-20 bg-secondary">
       <div className="container text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

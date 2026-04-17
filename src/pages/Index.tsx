@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import heroBg from "@/assets/hero-bg.jpg";
+import SEO from "@/components/SEO";
 
 const quickLinks = [
   { to: "/events", icon: Calendar, label: "Events", desc: "View upcoming fellowships" },
@@ -111,6 +112,21 @@ const Index = () => {
 
   return (
     <Layout>
+      <SEO 
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "UCOCSA - University of Malawi Church of Christ Student Association",
+          "url": "https://ucocsa.org",
+          "logo": "https://ucocsa.org/og-image.png",
+          "description": "A Christ-centered community nurturing faith, academic excellence, and lifelong fellowship at the University of Malawi.",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Zomba",
+            "addressCountry": "Malawi"
+          }
+        }}
+      />
       {/* Hero */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">

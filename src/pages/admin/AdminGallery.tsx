@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Image, Plus, Trash2, X, Star, StarOff, Eye, EyeOff } from "lucide-react";
+import { Check, Image, Plus, Trash2, X, Star, StarOff, Eye, EyeOff, Upload } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -153,6 +153,7 @@ const AdminGallery = () => {
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <AdminUploadPhotoDialog albumId={album.id} onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-gallery-albums"] })} />
                 <Button size="icon" variant="ghost" onClick={() => toggleAlbumField(album.id, "is_highlighted", album.is_highlighted)} title="Toggle highlight">
                   {album.is_highlighted ? <Star size={16} className="text-primary fill-primary" /> : <StarOff size={16} />}
                 </Button>
@@ -175,5 +176,92 @@ const AdminGallery = () => {
     </AdminLayout>
   );
 };
+
+function AdminUploadPhotoDialog({ albumId, onSuccess }: { albumId: string; onSuccess: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const handleUpload = async () => {
+    if (files.length === 0) return;
+    setUploading(true);
+    setProgress(0);
+    let successCount = 0;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split(".").pop();
+        const path = `${albumId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+        const { error: uploadError } = await supabase.storage.from("gallery").upload(path, file);
+        if (uploadError) { toast.error(`Error uploading ${file.name}`); continue; }
+
+        const { data: urlData } = supabase.storage.from("gallery").getPublicUrl(path);
+
+        const { error: insertError } = await supabase.from("gallery_photos").insert({
+          album_id: albumId,
+          image_url: urlData.publicUrl,
+          uploaded_by: userId || null,
+          is_approved: true,
+        });
+        
+        if (!insertError) {
+          successCount++;
+        } else {
+          toast.error(`Error saving ${file.name}`);
+        }
+        setProgress(Math.round(((i + 1) / files.length) * 100));
+      }
+
+      if (successCount > 0) {
+        toast.success(`Successfully uploaded ${successCount} photo(s)`);
+        setOpen(false);
+        setFiles([]);
+        onSuccess();
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Upload failed");
+    } finally {
+      setUploading(false);
+      setProgress(0);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setFiles([]); }}>
+      <DialogTrigger asChild>
+        <Button size="icon" variant="ghost" title="Upload photos">
+          <Upload size={16} className="text-primary" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Photos to Album</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <Input 
+            type="file" 
+            accept="image/*" 
+            multiple 
+            onChange={(e) => {
+              if (e.target.files) {
+                setFiles(Array.from(e.target.files));
+              }
+            }} 
+            disabled={uploading}
+          />
+          {files.length > 0 && <p className="text-sm text-muted-foreground">{files.length} file(s) selected.</p>}
+          <Button onClick={handleUpload} disabled={files.length === 0 || uploading} className="w-full">
+            {uploading ? `Uploading (${progress}%)...` : `Upload ${files.length} Photo(s)`}
+          </Button>
+          <p className="text-xs text-muted-foreground">Photos are automatically approved when uploaded by an admin.</p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default AdminGallery;

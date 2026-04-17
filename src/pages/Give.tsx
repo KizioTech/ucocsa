@@ -2,9 +2,14 @@ import { motion } from "framer-motion";
 import { Heart, CreditCard, Shield } from "lucide-react";
 import Layout from "@/components/Layout";
 import SectionHeading from "@/components/SectionHeading";
+import SEO from "@/components/SEO";
 
 const Give = () => (
   <Layout>
+    <SEO 
+      title="Support & Give"
+      description="Support UCOCSA's mission at the University of Malawi through your offerings and donations."
+    />
     <section className="py-20 bg-secondary">
       <div className="container text-center">
         <motion.div

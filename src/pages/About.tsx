@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import SectionHeading from "@/components/SectionHeading";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import SEO from "@/components/SEO";
 
 interface TeamMember {
   id: string;
@@ -31,6 +32,10 @@ const About = () => {
 
   return (
   <Layout>
+    <SEO 
+      title="About Us"
+      description="Learn about the history, mission, and vision of the University of Malawi Church of Christ Student Association (UCOCSA)."
+    />
     {/* Hero */}
     <section className="py-24 bg-gradient-to-b from-secondary to-background relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32" />

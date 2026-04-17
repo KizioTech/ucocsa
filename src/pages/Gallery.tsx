@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import SEO from "@/components/SEO";
 
 const Gallery = () => {
   const { user } = useAuth();
@@ -69,6 +70,10 @@ const Gallery = () => {
 
   return (
     <Layout>
+      <SEO 
+        title="Photo Gallery"
+        description="View photos and highlights from UCOCSA fellowships, worship services, outreach activities, and community events."
+      />
       <section className="py-16">
         <div className="container">
           <SectionHeading title="Photo Gallery" subtitle="Moments from our fellowship, worship, and outreach activities." />

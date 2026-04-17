@@ -4,6 +4,7 @@ import { MapPin, Phone, Mail, Clock, MessageCircle, Send, Facebook, Instagram, Y
 import Layout from "@/components/Layout";
 import SectionHeading from "@/components/SectionHeading";
 import { Button } from "@/components/ui/button";
+import SEO from "@/components/SEO";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,6 +41,10 @@ const Contact = () => {
 
   return (
     <Layout>
+      <SEO 
+        title="Contact Us"
+        description="Get in touch with UCOCSA at the University of Malawi. Find our location, email, phone number, and social media handles."
+      />
       {/* Hero */}
       <section className="py-20 bg-secondary">
         <div className="container text-center">

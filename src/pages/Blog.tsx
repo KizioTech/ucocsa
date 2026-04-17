@@ -4,6 +4,7 @@ import { ArrowRight, Clock, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import SectionHeading from "@/components/SectionHeading";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -23,6 +24,10 @@ const Blog = () => {
 
   return (
     <Layout>
+      <SEO 
+        title="Blog & Student Voices"
+        description="Read stories, devotionals, and reflections from the UCOCSA student community at the University of Malawi."
+      />
       <section className="py-20 bg-secondary">
         <div className="container text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

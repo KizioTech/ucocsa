@@ -9,6 +9,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -169,6 +170,24 @@ const BlogPost = () => {
 
   return (
     <Layout>
+      <SEO 
+        title={post.title}
+        description={post.excerpt || post.content.slice(0, 160)}
+        image={post.cover_image_url || undefined}
+        type="article"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "headline": post.title,
+          "image": [post.cover_image_url],
+          "datePublished": post.published_at,
+          "author": [{
+            "@type": "Person",
+            "name": post.profiles?.full_name || post.author_name,
+            "url": `https://ucocsa.org/profile/${post.author_id}`
+          }]
+        }}
+      />
       {/* Hero Header Selection */}
       <section className="relative w-full h-[60vh] md:h-[70vh] min-h-[400px] overflow-hidden">
         {post.cover_image_url ? (

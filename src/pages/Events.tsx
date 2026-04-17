@@ -6,6 +6,7 @@ import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import SEO from "@/components/SEO";
 
 type EventType = "Fellowship" | "Bible Study" | "Outreach" | "Special Service" | "Social" | "Other";
 
@@ -102,6 +103,10 @@ const Events = () => {
 
   return (
     <Layout>
+      <SEO 
+        title="Events & Fellowships"
+        description="Join us for upcoming fellowships, worship services, outreach activities, and community events at UCOCSA."
+      />
       <section className="py-20 bg-secondary">
         <div className="container text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

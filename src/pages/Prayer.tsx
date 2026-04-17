@@ -7,6 +7,7 @@ import PrayerComments from "@/components/PrayerComments";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import SEO from "@/components/SEO";
 
 const categories = ["Personal", "Academic", "Family", "Health", "National", "Thanksgiving"];
 
@@ -83,6 +84,10 @@ const Prayer = () => {
 
   return (
     <Layout>
+      <SEO 
+        title="Prayer Portal & Requests"
+        description="Submit your prayer requests, share praise reports, and join the UCOCSA community in interceding for one another."
+      />
       <section className="py-20 bg-secondary">
         <div className="container text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

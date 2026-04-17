@@ -4,6 +4,7 @@ import { Megaphone, Calendar } from "lucide-react";
 import Layout from "@/components/Layout";
 import SectionHeading from "@/components/SectionHeading";
 import { supabase } from "@/integrations/supabase/client";
+import SEO from "@/components/SEO";
 
 const Announcements = () => {
   const { data: announcements = [], isLoading } = useQuery({
@@ -22,6 +23,10 @@ const Announcements = () => {
 
   return (
     <Layout>
+      <SEO 
+        title="Announcements & News"
+        description="Stay updated with the latest news, notices, and announcements from the UCOCSA fellowship at the University of Malawi."
+      />
       <section className="py-16">
         <div className="container max-w-3xl">
           <SectionHeading

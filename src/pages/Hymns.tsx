@@ -14,6 +14,7 @@ import { Slider } from "@/components/ui/slider";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import SEO from "@/components/SEO";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { InstallHymnsButton, InstallHymnsPopup } from "@/components/InstallHymnsPrompt";
@@ -443,6 +444,10 @@ const Hymns: React.FC = () => {
 
   return (
     <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden">
+      <SEO 
+        title="Hymn Library & Lyrics"
+        description="Browse, search, and read hymns from the UCOCSA hymnal. Worship, praise, and sing along with our student community."
+      />
       <Navbar />
       <InstallHymnsPopup />
 
