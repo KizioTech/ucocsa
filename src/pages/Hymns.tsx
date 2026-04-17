@@ -454,7 +454,7 @@ const Hymns: React.FC = () => {
       <div className="flex-1 flex pt-[64px] h-full overflow-hidden">
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex w-72 lg:w-80 flex-col shrink-0">
-          <SidebarContents />
+          <SidebarContents {...sidebarProps} />
         </aside>
 
         {/* Main Content Area */}
