@@ -24,11 +24,16 @@ const Gallery = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gallery_albums")
-        .select("*, gallery_photos(id, image_url, caption)")
+        .select("*, photos:gallery_photos(id, image_url, caption)")
         .eq("is_highlighted", true)
         .eq("is_published", true);
       if (error) throw error;
-      return data;
+      
+      // Filter for approved photos only
+      return data?.map(album => ({
+        ...album,
+        gallery_photos: (album.photos as any[])?.filter((p: any) => p.is_approved !== false) || []
+      }));
     },
   });
 
@@ -179,7 +184,7 @@ const Gallery = () => {
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{album.description}</p>
                     )}
                     <p className="text-xs text-primary mt-2">
-                      {(album.gallery_photos as any)?.[0]?.count ?? 0} photos
+                      {Array.isArray(album.gallery_photos) ? (album.gallery_photos[0] as any)?.count ?? 0 : 0} photos
                     </p>
                   </div>
                 </motion.div>

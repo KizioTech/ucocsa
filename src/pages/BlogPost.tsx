@@ -306,7 +306,24 @@ const BlogPost = () => {
               </div>
             </div>
 
-            <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-4 py-2 rounded-full hover:bg-muted/50">
+            <button 
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: post.title,
+                    text: post.excerpt || post.title,
+                    url: window.location.href,
+                  }).catch(() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success("Link copied to clipboard");
+                  });
+                } else {
+                  navigator.clipboard.writeText(window.location.href);
+                  toast.success("Link copied to clipboard");
+                }
+              }}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-4 py-2 rounded-full hover:bg-muted/50"
+            >
               <Share2 size={20} />
               <span className="text-sm font-medium">Share</span>
             </button>

@@ -79,11 +79,16 @@ const Index = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gallery_albums")
-        .select("*, gallery_photos(id, image_url, caption)")
+        .select("*, photos:gallery_photos(id, image_url, caption, is_approved)")
         .eq("is_highlighted", true)
         .eq("is_published", true);
       if (error) throw error;
-      return data;
+      
+      // Filter for approved photos and map to gallery_photos for the component
+      return data?.map(album => ({
+        ...album,
+        gallery_photos: (album.photos as any[])?.filter((p: any) => p.is_approved !== false) || []
+      }));
     },
   });
 

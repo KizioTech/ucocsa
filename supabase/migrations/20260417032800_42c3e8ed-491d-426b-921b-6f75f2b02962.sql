@@ -1,4 +1,3 @@
--- ── HYMNS TABLE ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.hymns (
   id BIGSERIAL PRIMARY KEY,
   title TEXT NOT NULL,
@@ -13,6 +12,17 @@ CREATE TABLE IF NOT EXISTS public.hymns (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Ensure columns exist if table was created by a previous migration without them
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='hymns' AND column_name='is_approved') THEN
+    ALTER TABLE public.hymns ADD COLUMN is_approved BOOLEAN NOT NULL DEFAULT true;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='hymns' AND column_name='submitted_by') THEN
+    ALTER TABLE public.hymns ADD COLUMN submitted_by UUID;
+  END IF;
+END $$;
 
 ALTER TABLE public.hymns ENABLE ROW LEVEL SECURITY;
 

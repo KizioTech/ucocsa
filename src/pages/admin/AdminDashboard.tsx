@@ -21,7 +21,30 @@ const AdminDashboard = () => {
         pendingPrayers: pending.count ?? 0,
       });
     };
+    const cleanupExpired = async () => {
+      const today = new Date().toISOString().split("T")[0];
+      
+      // Cleanup events
+      const { error: eventError } = await supabase
+        .from("events")
+        .delete()
+        .lt("event_date", today);
+      
+      // Cleanup programs
+      const { error: programError } = await supabase
+        .from("service_programs")
+        .delete()
+        .lt("service_date", today);
+
+      // Cleanup announcements that had a specific end date
+      const { error: annError } = await supabase
+        .from("announcements")
+        .delete()
+        .lt("expires_at", today);
+    };
+
     fetchStats();
+    cleanupExpired();
   }, []);
 
   const cards = [

@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import NotificationBell from "./NotificationBell";
 
 const standaloneLinks = [
   { to: "/", label: "Home" },
@@ -113,13 +114,18 @@ const Navbar = () => {
           ))}
           <NavDropdown label="Community" links={communityLinks} />
           <NavDropdown label="Grow" links={growLinks} />
-          <Link
-            to="/hymns"
-            className="ml-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-gold-dark transition-colors"
-          >
-            Hymns
-          </Link>
-          {user ? (
+            <Link
+              to="/hymns"
+              className="ml-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-gold-dark transition-colors"
+            >
+              Hymns
+            </Link>
+            
+            <div className="ml-2 flex items-center gap-1 border-l border-border pl-2">
+              <NotificationBell />
+            </div>
+
+            {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger className="ml-2 outline-none">
                 <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
@@ -167,9 +173,12 @@ const Navbar = () => {
         </div>
 
         {/* Mobile toggle */}
-        <button onClick={() => setOpen(!open)} className="md:hidden p-2 text-foreground" aria-label="Toggle menu">
-          {open ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <NotificationBell />
+          <button onClick={() => setOpen(!open)} className="p-2 text-foreground" aria-label="Toggle menu">
+            {open ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}

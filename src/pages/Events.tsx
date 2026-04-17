@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Calendar as CalIcon, MapPin, Clock, Share2, Church, BookOpen, User, ChevronDown, ChevronUp } from "lucide-react";
+import { Calendar as CalIcon, MapPin, Clock, Share2, Church, BookOpen, User, ChevronDown, ChevronUp, Image as ImageIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import SEO from "@/components/SEO";
+import SharePoster from "@/components/SharePoster";
 
 type EventType = "Fellowship" | "Bible Study" | "Outreach" | "Special Service" | "Social" | "Other";
 
@@ -24,6 +25,7 @@ const typeColors: Record<string, string> = {
 const Events = () => {
   const [filter, setFilter] = useState<string>("All");
   const [expandedProgram, setExpandedProgram] = useState<string | null>(null);
+  const [sharingPoster, setSharingPoster] = useState<any | null>(null);
   const { user } = useAuth();
   const types = ["All", "Fellowship", "Bible Study", "Outreach", "Special Service", "Social", "MidWeek Service", "Sunday Service", "Other"];
 
@@ -99,6 +101,17 @@ const Events = () => {
 
   const toggleProgram = (id: string) => {
     setExpandedProgram(expandedProgram === id ? null : id);
+  };
+
+  const handleSharePoster = (evt: any) => {
+    setSharingPoster({
+      title: evt.title,
+      theme: evt.program?.theme,
+      date: formatDate(evt.event_date),
+      time: formatTime(evt.event_time),
+      location: evt.location || "UNIMA Campus",
+      type: "program"
+    });
   };
 
   return (
@@ -215,16 +228,30 @@ const Events = () => {
                     {evt.event_time && <span className="flex items-center gap-1"><Clock size={14} /> {formatTime(evt.event_time)}</span>}
                     {evt.location && <span className="flex items-center gap-1"><MapPin size={14} /> {evt.location}</span>}
                   </div>
-                  <button onClick={() => navigator.share?.({ title: evt.title, text: evt.description || evt.title })}
-                    className="mt-4 flex items-center gap-1 text-xs text-primary hover:underline">
-                    <Share2 size={12} /> Share
-                  </button>
+                  <div className="mt-4 flex gap-4">
+                    <button onClick={() => navigator.share?.({ title: evt.title, text: evt.description || evt.title, url: window.location.href })}
+                      className="flex items-center gap-1 text-xs text-primary hover:underline">
+                      <Share2 size={12} /> Share Link
+                    </button>
+                    <button onClick={() => handleSharePoster(evt)}
+                      className="flex items-center gap-1 text-xs text-gold-dark hover:underline font-medium">
+                      <ImageIcon size={12} /> Share as Poster
+                    </button>
+                  </div>
                 </motion.div>
               ))}
             </div>
           )}
         </div>
       </section>
+
+      {sharingPoster && (
+        <SharePoster
+          {...sharingPoster}
+          isOpen={!!sharingPoster}
+          onClose={() => setSharingPoster(null)}
+        />
+      )}
     </Layout>
   );
 };

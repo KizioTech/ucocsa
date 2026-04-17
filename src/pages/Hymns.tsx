@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import {
   Search, Heart, ArrowLeft, Music, Star, Book, Baby,
   Sunrise, Shield, Flame, Info, X, Play, Pause, ChevronDown,
-  MonitorPlay, Type, Menu, BookOpen, Sparkles, Plus
+  MonitorPlay, Type, Menu, BookOpen, Sparkles, Plus, Share2, Clipboard, Image as ImageIcon
 } from "lucide-react";
 import { backgroundImages } from "@/data/backgrounds";
 import { Slider } from "@/components/ui/slider";
@@ -18,6 +18,13 @@ import SEO from "@/components/SEO";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { InstallHymnsButton, InstallHymnsPopup } from "@/components/InstallHymnsPrompt";
+import SharePoster from "@/components/SharePoster";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // ─── Types & Metadata ─────────────────────────────────────────────────────────
 
@@ -276,6 +283,7 @@ const Hymns: React.FC = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [greeting] = useState(getGreeting);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [sharingPoster, setSharingPoster] = useState<any | null>(null);
   const [scrollSpeed, setScrollSpeed] = useState(3);
   // Chosen once on mount — changes only on page refresh, never during the session
   const [bgIndex] = useState(() => Math.floor(Math.random() * backgroundImages.length));
@@ -376,6 +384,36 @@ const Hymns: React.FC = () => {
     setIsMobileSidebarOpen(false);
     if (detailRef.current) detailRef.current.scrollTo(0, 0);
   }, []);
+
+  const handleShareText = () => {
+    if (!selected) return;
+    const firstVerse = selected.verses[0].split(/\n \n/)[0];
+    const text = `${selected.id}. ${selected.title}\n\n${firstVerse}\n\nRead more at: ${window.location.href}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: selected.title,
+        text: text,
+        url: window.location.href
+      }).catch(() => {
+        navigator.clipboard.writeText(text);
+        toast.success("Hymn lyrics copied to clipboard");
+      });
+    } else {
+      navigator.clipboard.writeText(text);
+      toast.success("Hymn lyrics copied to clipboard");
+    }
+  };
+
+  const handleSharePoster = () => {
+    if (!selected) return;
+    setSharingPoster({
+      title: `${selected.id}. ${selected.title}`,
+      subtitle: selected.verses[0].split(/\n \n/)[0],
+      theme: selected.author,
+      type: "hymn"
+    });
+  };
 
   const filteredHymns = useMemo(() => {
     let source = listMode === "favorites" ? hymns.filter(h => favorites.has(h.id)) : hymns;
@@ -494,10 +532,22 @@ const Hymns: React.FC = () => {
 
             {selected && (
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" onClick={() => toggleFavorite(selected.id)}
-                  className={favorites.has(selected.id) ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-destructive"}>
-                  <Heart className={`h-5 w-5 ${favorites.has(selected.id) ? "fill-current" : ""}`} />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+                      <Share2 className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleShareText} className="gap-2 cursor-pointer">
+                      <Clipboard size={14} /> Copy as Text
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSharePoster} className="gap-2 cursor-pointer">
+                      <ImageIcon size={14} /> Share as Image
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
                 <Button variant="ghost" size="icon" onClick={() => setShowHymnInfo(true)} className="text-muted-foreground hover:text-primary">
                   <Info className="h-5 w-5" />
                 </Button>
@@ -796,6 +846,14 @@ const Hymns: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {sharingPoster && (
+        <SharePoster
+          {...sharingPoster}
+          isOpen={!!sharingPoster}
+          onClose={() => setSharingPoster(null)}
+        />
+      )}
     </div>
   );
 };

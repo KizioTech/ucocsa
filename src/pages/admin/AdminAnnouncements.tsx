@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { ConfirmAction } from "@/components/ConfirmAction";
 
-const defaultForm = { title: "", content: "" };
+const defaultForm = { title: "", content: "", expires_at: "" };
 
 const AdminAnnouncements = () => {
   const queryClient = useQueryClient();
@@ -81,7 +81,7 @@ const AdminAnnouncements = () => {
   const resetForm = () => { setForm(defaultForm); setEditingId(null); setOpen(false); };
 
   const startEdit = (a: any) => {
-    setForm({ title: a.title, content: a.content });
+    setForm({ title: a.title, content: a.content, expires_at: a.expires_at || "" });
     setEditingId(a.id);
     setOpen(true);
   };
@@ -109,6 +109,11 @@ const AdminAnnouncements = () => {
                 <Label>Content</Label>
                 <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={5} required />
               </div>
+              <div>
+                <Label>Expires At (Optional)</Label>
+                <Input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
+                <p className="text-[10px] text-muted-foreground mt-1">Announcement will be deleted after this date.</p>
+              </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>
                 <Button type="submit" disabled={upsert.isPending}>{editingId ? "Update" : "Create"}</Button>
@@ -135,7 +140,10 @@ const AdminAnnouncements = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{a.content}</p>
+                <p className="text-sm text-muted-foreground mb-1 line-clamp-2">{a.content}</p>
+                {a.expires_at && (
+                  <p className="text-[10px] text-destructive font-medium mb-3">Expires: {new Date(a.expires_at).toLocaleDateString()}</p>
+                )}
                 <div className="flex gap-2 flex-wrap">
                   <Button size="sm" variant="outline" onClick={() => startEdit(a)}>
                     <Edit size={14} /> Edit
