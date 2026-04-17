@@ -639,22 +639,21 @@ const Hymns: React.FC = () => {
                   )}
                 </div>
 
-                {/* Single Player Instance for both audio and video modes (Native iframe) */}
-                {selected.youtube_id && (
+                {/* YouTube iframe — only mounted when activated, autoplays for instant start */}
+                {selected.youtube_id && youtubeMode !== 'none' && (
                   <div className={`transition-all duration-500 origin-top flex justify-center ${
-                    youtubeMode === 'video' 
-                      ? "mb-10 w-full rounded-2xl overflow-hidden shadow-xl border border-border bg-black h-[350px] opacity-100 scale-100 pointer-events-auto" 
-                      : youtubeMode === 'audio'
-                        ? "h-0 opacity-0 scale-95 pointer-events-none -mb-2"
-                        : "hidden"
+                    youtubeMode === 'video'
+                      ? "mb-10 w-full rounded-2xl overflow-hidden shadow-xl border border-border bg-black h-[350px] opacity-100 scale-100 pointer-events-auto"
+                      : "h-0 opacity-0 scale-95 pointer-events-none -mb-2"
                   }`}>
                     <iframe
                       ref={iframeRef}
                       width="100%"
                       height="100%"
-                      src={`https://www.youtube.com/embed/${selected.youtube_id}?enablejsapi=1&autoplay=0&controls=${youtubeMode === 'video' ? 1 : 0}`}
+                      src={`https://www.youtube.com/embed/${selected.youtube_id}?enablejsapi=1&autoplay=1&playsinline=1&rel=0&modestbranding=1&controls=${youtubeMode === 'video' ? 1 : 0}`}
                       title={selected.title}
                       frameBorder="0"
+                      loading="lazy"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
@@ -728,6 +727,63 @@ const Hymns: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Suggest Hymn Dialog (members only — submission requires admin approval) */}
+      <Dialog open={suggestOpen} onOpenChange={setSuggestOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" /> Suggest a New Hymn
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Your submission will be reviewed by an admin before appearing in the public hymn library.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                value={suggestForm.title}
+                onChange={(e) => setSuggestForm({ ...suggestForm, title: e.target.value })}
+                placeholder="Title *"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary"
+              />
+              <input
+                value={suggestForm.author}
+                onChange={(e) => setSuggestForm({ ...suggestForm, author: e.target.value })}
+                placeholder="Author"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                value={suggestForm.category}
+                onChange={(e) => setSuggestForm({ ...suggestForm, category: e.target.value })}
+                placeholder="Category (e.g. Worship)"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary"
+              />
+              <input
+                value={suggestForm.youtube_id}
+                onChange={(e) => setSuggestForm({ ...suggestForm, youtube_id: e.target.value })}
+                placeholder="YouTube ID (optional)"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <textarea
+              value={suggestForm.verses}
+              onChange={(e) => setSuggestForm({ ...suggestForm, verses: e.target.value })}
+              placeholder="Lyrics — separate each verse with a blank line *"
+              rows={8}
+              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary font-mono leading-relaxed resize-none"
+            />
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="outline" onClick={() => setSuggestOpen(false)}>Cancel</Button>
+              <Button onClick={() => suggestMut.mutate()} disabled={suggestMut.isPending}>
+                {suggestMut.isPending ? "Submitting…" : "Submit for Approval"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
