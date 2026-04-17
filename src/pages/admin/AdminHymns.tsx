@@ -28,16 +28,156 @@ const EMPTY_HYMN: Omit<Hymn, "id"> = {
   bio: "",
 };
 
+// ── Top-level form (memoized) — keeps inputs from losing focus on every keystroke ──
+interface HymnFormProps {
+  isNew: boolean;
+  editHymn: Partial<Hymn>;
+  setEditHymn: React.Dispatch<React.SetStateAction<Partial<Hymn> | null>>;
+  onClose: () => void;
+  onSave: () => void;
+  saving: boolean;
+}
+
+const HymnForm = memo(({ isNew, editHymn, setEditHymn, onClose, onSave, saving }: HymnFormProps) => {
+  const updateVerse = (idx: number, val: string) => {
+    setEditHymn(prev => {
+      if (!prev) return prev;
+      const verses = [...(prev.verses || [])];
+      verses[idx] = val;
+      return { ...prev, verses };
+    });
+  };
+  const addVerse = () => setEditHymn(prev => prev ? { ...prev, verses: [...(prev.verses || []), ""] } : prev);
+  const removeVerse = (idx: number) => setEditHymn(prev =>
+    prev ? { ...prev, verses: (prev.verses || []).filter((_, i) => i !== idx) } : prev
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center p-4 overflow-y-auto">
+      <div className="bg-card border border-border rounded-2xl w-full max-w-2xl my-6 p-6 shadow-2xl">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold font-heading">{isNew ? "Add New Hymn" : `Edit Hymn #${editHymn.id}`}</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted transition-colors"><X size={18} /></button>
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-1 block">Title *</label>
+              <input
+                value={editHymn.title || ""}
+                onChange={e => setEditHymn(p => p ? { ...p, title: e.target.value } : p)}
+                placeholder="Hymn title"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-1 block">Author</label>
+              <input
+                value={editHymn.author || ""}
+                onChange={e => setEditHymn(p => p ? { ...p, author: e.target.value } : p)}
+                placeholder="Author name"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-1 block">Category</label>
+              <input
+                value={editHymn.category || ""}
+                onChange={e => setEditHymn(p => p ? { ...p, category: e.target.value } : p)}
+                placeholder="e.g. Worship, Traditional, Praise"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-1 block">YouTube ID</label>
+              <input
+                value={editHymn.youtube_id || ""}
+                onChange={e => setEditHymn(p => p ? { ...p, youtube_id: e.target.value } : p)}
+                placeholder="e.g. YRPh9fymWu8 (the part after v=)"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-1 block">First Line</label>
+            <input
+              value={editHymn.first_line || ""}
+              onChange={e => setEditHymn(p => p ? { ...p, first_line: e.target.value } : p)}
+              placeholder="Opening line of the hymn"
+              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-muted-foreground">Verses</label>
+              <Button size="sm" variant="outline" onClick={addVerse} className="h-7 text-xs gap-1">
+                <Plus size={12} /> Add Verse
+              </Button>
+            </div>
+            <div className="space-y-3">
+              {(editHymn.verses || []).map((verse, idx) => (
+                <div key={idx} className="relative">
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs font-semibold text-muted-foreground pt-2.5 w-14 shrink-0">Verse {idx + 1}</span>
+                    <textarea
+                      value={verse}
+                      onChange={e => updateVerse(idx, e.target.value)}
+                      rows={4}
+                      placeholder={`Type verse ${idx + 1} lyrics here. Use a blank line to separate the chorus.`}
+                      className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none font-mono leading-relaxed"
+                    />
+                    {(editHymn.verses || []).length > 1 && (
+                      <button onClick={() => removeVerse(idx)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors mt-1">
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Tip: Separate a chorus from the verse with a blank line. Each verse becomes its own card on the public page.</p>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-1 block">Composer Bio / Background</label>
+            <textarea
+              value={editHymn.bio || ""}
+              onChange={e => setEditHymn(p => p ? { ...p, bio: e.target.value } : p)}
+              rows={3}
+              placeholder="Brief biography of the hymn composer or the story behind the hymn…"
+              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button onClick={onSave} disabled={saving || !editHymn.title}>
+              {saving ? "Saving…" : isNew ? "Add Hymn" : "Save Changes"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+HymnForm.displayName = "HymnForm";
+
 const AdminHymns = () => {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [editHymn, setEditHymn] = useState<Partial<Hymn> | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [tab, setTab] = useState<"all" | "pending">("all");
 
-  // ── Fetch ────────────────────────────────────────────────────────────────────
   const { data: hymns = [], isLoading } = useQuery({
-    queryKey: ["hymns"],
+    queryKey: ["admin-hymns"],
     queryFn: async () => {
       const { data, error } = await (supabase as any).from("hymns").select("*").order("id");
       if (error) throw error;
@@ -45,7 +185,6 @@ const AdminHymns = () => {
     },
   });
 
-  // ── Mutations ────────────────────────────────────────────────────────────────
   const saveMut = useMutation({
     mutationFn: async (h: Partial<Hymn>) => {
       const payload = {
@@ -56,6 +195,7 @@ const AdminHymns = () => {
         youtube_id: h.youtube_id || null,
         first_line: h.first_line || null,
         bio: h.bio || null,
+        is_approved: true,
       };
       if (isNew) {
         const { error } = await (supabase as any).from("hymns").insert(payload);
@@ -66,9 +206,23 @@ const AdminHymns = () => {
       }
     },
     onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-hymns"] });
       qc.invalidateQueries({ queryKey: ["hymns"] });
       toast.success(isNew ? "Hymn added!" : "Hymn updated!");
       setEditHymn(null);
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const approveMut = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await (supabase as any).from("hymns").update({ is_approved: true }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-hymns"] });
+      qc.invalidateQueries({ queryKey: ["hymns"] });
+      toast.success("Hymn approved and published.");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -78,178 +232,63 @@ const AdminHymns = () => {
       const { error } = await (supabase as any).from("hymns").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["hymns"] }); toast.success("Hymn deleted."); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-hymns"] }); toast.success("Hymn deleted."); },
     onError: (e: any) => toast.error(e.message),
   });
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
   const openNew = () => { setIsNew(true); setEditHymn({ ...EMPTY_HYMN }); };
   const openEdit = (h: Hymn) => { setIsNew(false); setEditHymn({ ...h }); };
   const closeForm = () => setEditHymn(null);
 
-  const updateVerse = (idx: number, val: string) => {
-    setEditHymn(prev => {
-      if (!prev) return prev;
-      const verses = [...(prev.verses || [])];
-      verses[idx] = val;
-      return { ...prev, verses };
-    });
-  };
+  const visibleHymns = hymns.filter((h: any) => tab === "pending" ? !h.is_approved : true);
+  const pendingCount = hymns.filter((h: any) => !h.is_approved).length;
 
-  const addVerse = () => setEditHymn(prev => prev ? { ...prev, verses: [...(prev.verses || []), ""] } : prev);
-  const removeVerse = (idx: number) => setEditHymn(prev =>
-    prev ? { ...prev, verses: (prev.verses || []).filter((_, i) => i !== idx) } : prev
-  );
-
-  const filtered = hymns.filter(h =>
+  const filtered = visibleHymns.filter(h =>
     !search ||
     h.title.toLowerCase().includes(search.toLowerCase()) ||
     (h.author || "").toLowerCase().includes(search.toLowerCase()) ||
     h.id.toString() === search
   );
 
-  // ── FORM ─────────────────────────────────────────────────────────────────────
-  const HymnForm = () => {
-    if (!editHymn) return null;
-    return (
-      <div className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center p-4 overflow-y-auto">
-        <div className="bg-card border border-border rounded-2xl w-full max-w-2xl my-6 p-6 shadow-2xl">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold font-heading">{isNew ? "Add New Hymn" : `Edit Hymn #${editHymn.id}`}</h2>
-            <button onClick={closeForm} className="p-2 rounded-lg hover:bg-muted transition-colors"><X size={18} /></button>
-          </div>
-
-          <div className="space-y-4">
-            {/* Title & Author */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-1 block">Title *</label>
-                <input
-                  value={editHymn.title || ""}
-                  onChange={e => setEditHymn(p => p ? { ...p, title: e.target.value } : p)}
-                  placeholder="Hymn title"
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-1 block">Author</label>
-                <input
-                  value={editHymn.author || ""}
-                  onChange={e => setEditHymn(p => p ? { ...p, author: e.target.value } : p)}
-                  placeholder="Author name"
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Category & YouTube */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-1 block">Category</label>
-                <input
-                  value={editHymn.category || ""}
-                  onChange={e => setEditHymn(p => p ? { ...p, category: e.target.value } : p)}
-                  placeholder="e.g. Worship, Traditional, Praise"
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-1 block">YouTube ID</label>
-                <input
-                  value={editHymn.youtube_id || ""}
-                  onChange={e => setEditHymn(p => p ? { ...p, youtube_id: e.target.value } : p)}
-                  placeholder="e.g. YRPh9fymWu8"
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                />
-              </div>
-            </div>
-
-            {/* First Line */}
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-1 block">First Line</label>
-              <input
-                value={editHymn.first_line || ""}
-                onChange={e => setEditHymn(p => p ? { ...p, first_line: e.target.value } : p)}
-                placeholder="Opening line of the hymn"
-                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-              />
-            </div>
-
-            {/* Verses */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-muted-foreground">Verses</label>
-                <Button size="sm" variant="outline" onClick={addVerse} className="h-7 text-xs gap-1">
-                  <Plus size={12} /> Add Verse
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {(editHymn.verses || []).map((verse, idx) => (
-                  <div key={idx} className="relative">
-                    <div className="flex items-start gap-2">
-                      <span className="text-xs font-semibold text-muted-foreground pt-2.5 w-14 shrink-0">Verse {idx + 1}</span>
-                      <textarea
-                        value={verse}
-                        onChange={e => updateVerse(idx, e.target.value)}
-                        rows={4}
-                        placeholder={`Type verse ${idx + 1} lyrics here. Use a blank line to separate chorus.`}
-                        className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none font-mono leading-relaxed"
-                      />
-                      {(editHymn.verses || []).length > 1 && (
-                        <button onClick={() => removeVerse(idx)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors mt-1">
-                          <X size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Tip: Separate a chorus from the verse by adding a blank line between them.</p>
-            </div>
-
-            {/* Bio */}
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-1 block">Composer Bio</label>
-              <textarea
-                value={editHymn.bio || ""}
-                onChange={e => setEditHymn(p => p ? { ...p, bio: e.target.value } : p)}
-                rows={3}
-                placeholder="Brief biography of the hymn composer..."
-                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
-              />
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={closeForm}>Cancel</Button>
-              <Button onClick={() => saveMut.mutate(editHymn)} disabled={saveMut.isPending || !editHymn.title}>
-                {saveMut.isPending ? "Saving…" : isNew ? "Add Hymn" : "Save Changes"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // ── RENDER ───────────────────────────────────────────────────────────────────
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold font-heading flex items-center gap-2">
               <Music className="text-primary" size={22} /> Hymn Library
             </h1>
-            <p className="text-muted-foreground text-sm mt-0.5">{hymns.length} hymns in database</p>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              {hymns.length} hymns in database{pendingCount > 0 && ` · ${pendingCount} pending approval`}
+            </p>
           </div>
           <Button onClick={openNew} className="gap-2">
             <Plus size={16} /> Add Hymn
           </Button>
         </div>
 
-        {/* Search */}
+        <div className="flex items-center gap-2 border-b border-border">
+          <button
+            onClick={() => setTab("all")}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              tab === "all" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            All Hymns
+          </button>
+          <button
+            onClick={() => setTab("pending")}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors flex items-center gap-1.5 ${
+              tab === "pending" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Clock size={14} /> Pending Approval
+            {pendingCount > 0 && (
+              <span className="bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">{pendingCount}</span>
+            )}
+          </button>
+        </div>
+
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -257,7 +296,6 @@ const AdminHymns = () => {
           className="w-full max-w-sm px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
         />
 
-        {/* Table */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -283,7 +321,7 @@ const AdminHymns = () => {
                 ) : filtered.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
-                      No hymns match your search.
+                      {tab === "pending" ? "No pending submissions." : "No hymns match your search."}
                     </td>
                   </tr>
                 ) : (
@@ -297,6 +335,9 @@ const AdminHymns = () => {
                             className="font-medium text-left hover:text-primary transition-colors flex items-center gap-1"
                           >
                             {hymn.title}
+                            {!(hymn as any).is_approved && (
+                              <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">Pending</span>
+                            )}
                             {expandedId === hymn.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                           </button>
                           <p className="text-xs text-muted-foreground italic truncate max-w-xs">{hymn.first_line}</p>
@@ -310,6 +351,15 @@ const AdminHymns = () => {
                         <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{hymn.verses.length}</td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
+                            {!(hymn as any).is_approved && (
+                              <button
+                                onClick={() => approveMut.mutate(hymn.id)}
+                                title="Approve and publish"
+                                className="p-1.5 rounded hover:bg-primary/10 text-primary transition-colors"
+                              >
+                                <Check size={14} />
+                              </button>
+                            )}
                             <button onClick={() => openEdit(hymn)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
                               <Pencil size={14} />
                             </button>
@@ -345,7 +395,16 @@ const AdminHymns = () => {
         </div>
       </div>
 
-      {editHymn && <HymnForm />}
+      {editHymn && (
+        <HymnForm
+          isNew={isNew}
+          editHymn={editHymn}
+          setEditHymn={setEditHymn}
+          onClose={closeForm}
+          onSave={() => saveMut.mutate(editHymn)}
+          saving={saveMut.isPending}
+        />
+      )}
     </AdminLayout>
   );
 };
