@@ -12,13 +12,13 @@ interface SEOProps {
 }
 
 export default function SEO({ 
-  title = "UCOCSA — UNIMA | Church of Christ Student Association", 
+  title = "UCOCSA — University of Malawi Church of Christ Student Association", 
   description = "A Christ-centered community nurturing faith, academic excellence, and lifelong fellowship at the University of Malawi.", 
   name = "UCOCSA", 
   type = "website", 
-  image = "https://ucocsa.org/og-image.png",
-  url = "https://ucocsa.org",
-  keywords = "UCOCSA, UNIMA, University of Malawi, Christian, Student Fellowship, Chanco, College Fellowship, Christian Organization",
+  image = "https://ucocsa.vercel.app/og-image.png",
+  url = "https://ucocsa.vercel.app/",
+  keywords = "church of christ, Unima church of christ, church of christ malawi, COC, C.O.C., namikango mission, UCOCSA, UNIMA, University of Malawi, Christian, Student Fellowship, Chanco, College Fellowship, Christian Organization",
   schema
 }: SEOProps) {
   const fullTitle = title.includes("UCOCSA") ? title : `${title} | UCOCSA`;

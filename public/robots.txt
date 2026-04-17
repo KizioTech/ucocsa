@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://ucocsa.org/sitemap.xml
+Sitemap: https://ucocsa.vercel.app/sitemap.xml
