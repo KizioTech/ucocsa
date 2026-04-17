@@ -25,7 +25,18 @@ if (isPreviewHost || isInIframe) {
 } else if ("serviceWorker" in navigator) {
   import("virtual:pwa-register")
     .then(({ registerSW }) => {
-      registerSW({ immediate: true });
+      registerSW({ 
+        immediate: true,
+        onRegisteredSW(swUrl, r) {
+          console.log('SW Registered:', swUrl);
+          // Check for updates every hour
+          if (r) setInterval(() => { r.update(); }, 60 * 60 * 1000);
+        },
+        onNeedRefresh() {
+          // Force reload when new content is available
+          window.location.reload();
+        }
+      });
     })
     .catch(() => {
       /* PWA register module not available — ignore */

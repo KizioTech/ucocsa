@@ -47,6 +47,7 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
+        cleanupOutdatedCaches: true,
         // Never cache OAuth or admin/api edge calls
         navigateFallback: "/hymns",
         navigateFallbackDenylist: [
@@ -63,7 +64,7 @@ export default defineConfig(({ mode }) => ({
               url.pathname.includes("/rest/v1/hymns"),
             handler: "NetworkFirst",
             options: {
-              cacheName: "hymns-data",
+              cacheName: "hymns-data-v2",
               networkTimeoutSeconds: 4,
               expiration: {
                 maxEntries: 50,
@@ -76,7 +77,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: ({ request }) => request.destination === "image",
             handler: "StaleWhileRevalidate",
             options: {
-              cacheName: "hymn-images",
+              cacheName: "hymn-images-v2",
               expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },

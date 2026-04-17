@@ -1,3 +1,4 @@
+// SharePoster — v2.0.1 (Force SW update)
 import React, { useRef } from "react";
 import { toPng } from "html-to-image";
 import { Share2, Download, X } from "lucide-react";
