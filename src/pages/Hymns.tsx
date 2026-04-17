@@ -173,8 +173,93 @@ const renderVerse = (text: string) => {
   return <div className="whitespace-pre-line">{text}</div>;
 };
 
+// ─── Sidebar (top-level memoized — prevents focus loss on every keystroke) ─
+interface SidebarProps {
+  search: string;
+  setSearch: (s: string) => void;
+  listMode: "all" | "favorites";
+  setListMode: (m: "all" | "favorites") => void;
+  favorites: Set<number>;
+  filteredHymns: Hymn[];
+  selected: Hymn | null;
+  openHymn: (h: Hymn) => void;
+  onSuggest: () => void;
+  isLoggedIn: boolean;
+}
+
+const SidebarContents = memo(({
+  search, setSearch, listMode, setListMode, favorites, filteredHymns, selected, openHymn, onSuggest, isLoggedIn,
+}: SidebarProps) => (
+  <div className="flex flex-col h-full overflow-hidden bg-card border-r border-border drop-shadow-sm z-20">
+    <div className="p-4 border-b border-border bg-card shrink-0 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="font-heading font-bold text-xl text-primary flex items-center gap-2">
+          <BookOpen className="h-5 w-5" /> Hymn Library
+        </h2>
+        {isLoggedIn && (
+          <Button size="sm" variant="outline" onClick={onSuggest} className="h-7 text-xs gap-1" title="Suggest a new hymn (admin approval required)">
+            <Plus className="h-3 w-3" /> Suggest
+          </Button>
+        )}
+      </div>
+
+      <div className="flex text-xs rounded-md border border-border p-0.5 bg-muted">
+        <button
+          onClick={() => setListMode('all')}
+          className={`flex-1 py-1.5 rounded-sm font-semibold transition-colors ${listMode === 'all' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+        >
+          All Hymns
+        </button>
+        <button
+          onClick={() => setListMode('favorites')}
+          className={`flex-1 py-1.5 rounded-sm font-semibold transition-colors ${listMode === 'favorites' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+        >
+          Favorites ({favorites.size})
+        </button>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="Search title, number, author..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full pl-9 pr-3 py-2 text-sm bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+        />
+      </div>
+    </div>
+
+    <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
+      {filteredHymns.length === 0 ? (
+        <div className="text-center p-6 text-muted-foreground text-sm">
+          {listMode === 'favorites' ? 'No favorites yet.' : 'No hymns found.'}
+        </div>
+      ) : (
+        filteredHymns.map(h => (
+          <button
+            key={h.id}
+            onClick={() => openHymn(h)}
+            className={`w-full flex items-start gap-3 px-3 py-2.5 text-left rounded-md transition-colors text-sm border-l-2 ${
+              selected?.id === h.id
+                ? 'bg-primary/10 border-primary text-foreground font-semibold'
+                : 'border-transparent hover:bg-muted text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <span className={`w-6 shrink-0 font-bold ${selected?.id === h.id ? 'text-primary' : 'text-muted-foreground/60'}`}>{h.id}.</span>
+            <span className="truncate flex-1 font-medium">{h.title}</span>
+          </button>
+        ))
+      )}
+    </div>
+  </div>
+));
+SidebarContents.displayName = "SidebarContents";
+
 // ─── Main Component ────────────────────────────────────────────────────────
 const Hymns: React.FC = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [selected, setSelected] = useState<Hymn | null>(null);
   const [search, setSearch] = useState("");
   const [listMode, setListMode] = useState<"all" | "favorites">("all");
