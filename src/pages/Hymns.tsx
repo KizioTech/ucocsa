@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { InstallHymnsButton, InstallHymnsPopup } from "@/components/InstallHymnsPrompt";
 
 // ─── Types & Metadata ─────────────────────────────────────────────────────────
 
@@ -443,6 +444,12 @@ const Hymns: React.FC = () => {
   return (
     <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden">
       <Navbar />
+      <InstallHymnsPopup />
+
+      {/* Floating install button (only renders when installable) */}
+      <div className="fixed bottom-4 right-4 z-40 md:top-20 md:bottom-auto">
+        <InstallHymnsButton />
+      </div>
 
       {/* Persistent mobile sidebar — always mounted so Browse Library works from the welcome screen */}
       <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
