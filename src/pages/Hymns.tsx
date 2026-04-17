@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import {
   Search, Heart, ArrowLeft, Music, Star, Book, Baby,
   Sunrise, Shield, Flame, Info, X, Play, Pause, ChevronDown,
-  MonitorPlay, Type, Menu, BookOpen, Sparkles
+  MonitorPlay, Type, Menu, BookOpen, Sparkles, Plus
 } from "lucide-react";
 import { backgroundImages } from "@/data/backgrounds";
 import { Slider } from "@/components/ui/slider";
@@ -13,6 +15,7 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 // ─── Types & Metadata ─────────────────────────────────────────────────────────
 
