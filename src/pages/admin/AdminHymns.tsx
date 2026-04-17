@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, Music, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Music, ChevronDown, ChevronUp, Check, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmAction } from "@/components/ConfirmAction";
 
