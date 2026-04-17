@@ -36,6 +36,7 @@ const Messages = lazy(() => import("./pages/Messages.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Hymns = lazy(() => import("./pages/Hymns.tsx"));
+const Announcements = lazy(() => import("./pages/Announcements.tsx"));
 
 // Loading Fallback Component
 const PageLoader = () => (
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/gallery" element={<Gallery />} />
 
               <Route path="/hymns" element={<Hymns />} />
+              <Route path="/announcements" element={<Announcements />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/:id" element={<Profile />} />
