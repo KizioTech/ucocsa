@@ -37,11 +37,15 @@ const AdminAnnouncements = () => {
 
   const upsert = useMutation({
     mutationFn: async () => {
+      const payload = {
+        ...form,
+        expires_at: form.expires_at || null,
+      };
       if (editingId) {
-        const { error } = await supabase.from("announcements").update(form).eq("id", editingId);
+        const { error } = await supabase.from("announcements").update(payload).eq("id", editingId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("announcements").insert({ ...form, author_id: user?.id });
+        const { error } = await supabase.from("announcements").insert({ ...payload, author_id: user?.id });
         if (error) throw error;
       }
     },
