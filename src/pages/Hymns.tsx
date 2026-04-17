@@ -390,65 +390,55 @@ const Hymns: React.FC = () => {
   }, [hymns, search, listMode, favorites]);
 
 
-  // ─── Sidebar Content ───────────────────────────────────────────────────────
-  const SidebarContents = () => (
-    <div className="flex flex-col h-full overflow-hidden bg-card border-r border-border drop-shadow-sm z-20">
-      <div className="p-4 border-b border-border bg-card shrink-0 space-y-4">
-        <h2 className="font-heading font-bold text-xl text-primary flex items-center gap-2">
-          <BookOpen className="h-5 w-5" /> Hymn Library
-        </h2>
-        
-        <div className="flex text-xs rounded-md border border-border p-0.5 bg-muted">
-          <button
-            onClick={() => setListMode('all')}
-            className={`flex-1 py-1.5 rounded-sm font-semibold transition-colors ${listMode === 'all' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            All Hymns
-          </button>
-          <button
-            onClick={() => setListMode('favorites')}
-            className={`flex-1 py-1.5 rounded-sm font-semibold transition-colors ${listMode === 'favorites' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            Favorites ({favorites.size})
-          </button>
-        </div>
+  // ─── Suggest Hymn (members) ─────────────────────────────────────────────
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [suggestForm, setSuggestForm] = useState({ title: "", author: "", category: "", verses: "", youtube_id: "" });
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search title, number, author..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-          />
-        </div>
-      </div>
+  const suggestMut = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("You must be logged in to suggest a hymn.");
+      if (!suggestForm.title.trim() || !suggestForm.verses.trim()) {
+        throw new Error("Title and at least one verse are required.");
+      }
+      const verses = suggestForm.verses
+        .split(/\n\s*\n+/)
+        .map((v) => v.trim())
+        .filter(Boolean);
+      const { error } = await (supabase as any).from("hymns").insert({
+        title: suggestForm.title.trim(),
+        author: suggestForm.author.trim() || null,
+        category: suggestForm.category.trim() || null,
+        verses,
+        youtube_id: suggestForm.youtube_id.trim() || null,
+        first_line: verses[0]?.split("\n")[0] || null,
+        submitted_by: user.id,
+        is_approved: false,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Thank you! Your hymn has been submitted for admin approval.");
+      setSuggestOpen(false);
+      setSuggestForm({ title: "", author: "", category: "", verses: "", youtube_id: "" });
+      queryClient.invalidateQueries({ queryKey: ["hymns"] });
+    },
+    onError: (e: any) => toast.error(e.message || "Failed to submit hymn."),
+  });
 
-      <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
-        {filteredHymns.length === 0 ? (
-          <div className="text-center p-6 text-muted-foreground text-sm">
-            {listMode === 'favorites' ? 'No favorites yet.' : 'No hymns found.'}
-          </div>
-        ) : (
-          filteredHymns.map(h => (
-            <button
-              key={h.id}
-              onClick={() => openHymn(h)}
-              className={`w-full flex items-start gap-3 px-3 py-2.5 text-left rounded-md transition-colors text-sm border-l-2 ${
-                selected?.id === h.id
-                  ? 'bg-primary/10 border-primary text-foreground font-semibold'
-                  : 'border-transparent hover:bg-muted text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <span className={`w-6 shrink-0 font-bold ${selected?.id === h.id ? 'text-primary' : 'text-muted-foreground/60'}`}>{h.id}.</span>
-              <span className="truncate flex-1 font-medium">{h.title}</span>
-            </button>
-          ))
-        )}
-      </div>
-    </div>
-  );
+  const handleSuggestClick = useCallback(() => {
+    if (!user) {
+      toast.info("Please log in to suggest a hymn.");
+      return;
+    }
+    setSuggestOpen(true);
+  }, [user]);
+
+  const sidebarProps: SidebarProps = {
+    search, setSearch, listMode, setListMode, favorites,
+    filteredHymns, selected, openHymn,
+    onSuggest: handleSuggestClick,
+    isLoggedIn: !!user,
+  };
 
   return (
     <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden">
@@ -457,7 +447,7 @@ const Hymns: React.FC = () => {
       {/* Persistent mobile sidebar — always mounted so Browse Library works from the welcome screen */}
       <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
         <SheetContent side="left" className="w-[85vw] max-w-[320px] p-0 border-r border-border">
-          <SidebarContents />
+          <SidebarContents {...sidebarProps} />
         </SheetContent>
       </Sheet>
 
