@@ -303,6 +303,16 @@ const AdminPrograms = () => {
               </div>
             </div>
 
+            <div>
+              <Label>Location / Room</Label>
+              <Input
+                value={form.location}
+                onChange={(e) => setForm({ ...form, location: e.target.value })}
+                placeholder="e.g. Lecture Theater 2"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Default for Sunday Gatherings: Lecture Theater 2.</p>
+            </div>
+
             {form.service_type === "sunday" && (
               <>
                 <div className="border-t pt-4 mt-4">
