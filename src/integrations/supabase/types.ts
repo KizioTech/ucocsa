@@ -23,7 +23,6 @@ export type Database = {
           is_published: boolean
           published_at: string | null
           title: string
-          expires_at: string | null
         }
         Insert: {
           author_id?: string | null
@@ -33,7 +32,6 @@ export type Database = {
           is_published?: boolean
           published_at?: string | null
           title: string
-          expires_at?: string | null
         }
         Update: {
           author_id?: string | null
@@ -43,7 +41,6 @@ export type Database = {
           is_published?: boolean
           published_at?: string | null
           title?: string
-          expires_at?: string | null
         }
         Relationships: []
       }
