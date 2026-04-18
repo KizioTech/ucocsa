@@ -41,11 +41,11 @@ const AdminDashboard = () => {
         historicalMembers,
         historicalPrayers
       ] = await Promise.all([
-        supabase.from("members").select("id", { count: "exact", head: true }),
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("events").select("id", { count: "exact", head: true }),
         supabase.from("prayer_requests").select("id", { count: "exact", head: true }),
         supabase.from("prayer_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("members").select("created_at").gte("created_at", sixMonthsAgo.toISOString()),
+        supabase.from("profiles").select("created_at").gte("created_at", sixMonthsAgo.toISOString()),
         supabase.from("prayer_requests").select("created_at, status").gte("created_at", sixMonthsAgo.toISOString()),
       ]);
 

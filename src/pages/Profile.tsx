@@ -20,6 +20,10 @@ const Profile = () => {
   const [profile, setProfile] = useState<any>(null);
   const [fullName, setFullName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [faculty, setFaculty] = useState("");
+  const [yearOfStudy, setYearOfStudy] = useState("1");
+  const [interests, setInterests] = useState("");
+  const [phone, setPhone] = useState("");
   const [authorPosts, setAuthorPosts] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -46,6 +50,10 @@ const Profile = () => {
           setProfile(profileRes.data);
           setFullName(profileRes.data.full_name || "");
           setAvatarUrl(profileRes.data.avatar_url || "");
+          setFaculty(profileRes.data.faculty || "");
+          setYearOfStudy(String(profileRes.data.year_of_study || 1));
+          setInterests((profileRes.data.interests || []).join(", "));
+          setPhone(profileRes.data.phone || "");
         }
         if (postsRes.data) {
           setAuthorPosts(postsRes.data);
@@ -83,7 +91,15 @@ const Profile = () => {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: fullName, avatar_url: avatarUrl, updated_at: new Date().toISOString() })
+      .update({ 
+        full_name: fullName, 
+        avatar_url: avatarUrl, 
+        faculty,
+        year_of_study: parseInt(yearOfStudy),
+        interests: interests.split(",").map(i => i.trim()).filter(i => i),
+        phone,
+        updated_at: new Date().toISOString() 
+      })
       .eq("id", user.id);
 
     if (error) {
@@ -166,6 +182,54 @@ const Profile = () => {
                           <Mail size={14} /> Email Address
                         </label>
                         <Input value={user?.email || ""} disabled className="bg-muted border-border text-foreground opacity-60" />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                          <User size={14} /> Phone Number
+                        </label>
+                        <Input
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="Include country code"
+                          className="bg-muted border-border text-foreground"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                            Faculty
+                          </label>
+                          <Input
+                            value={faculty}
+                            onChange={(e) => setFaculty(e.target.value)}
+                            placeholder="e.g. Science"
+                            className="bg-muted border-border text-foreground"
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                            Year
+                          </label>
+                          <Input
+                            type="number"
+                            min="1"
+                            max="6"
+                            value={yearOfStudy}
+                            onChange={(e) => setYearOfStudy(e.target.value)}
+                            className="bg-muted border-border text-foreground"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                          Interests (comma separated)
+                        </label>
+                        <Input
+                          value={interests}
+                          onChange={(e) => setInterests(e.target.value)}
+                          placeholder="e.g. Hymns, Bible Study, Outreach"
+                          className="bg-muted border-border text-foreground"
+                        />
                       </div>
                       <Button onClick={handleSave} disabled={saving} className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20">
                         {saving ? "Saving..." : "Update Profile"}

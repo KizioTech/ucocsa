@@ -5,13 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface MemberRow {
   id: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
   email: string;
   phone: string | null;
-  faculty: string;
-  year_of_study: number;
-  interests: string[];
+  faculty: string | null;
+  year_of_study: number | null;
+  interests: string[] | null;
   created_at: string;
 }
 
@@ -22,7 +21,7 @@ const AdminMembers = () => {
   useEffect(() => {
     const fetchMembers = async () => {
       const { data } = await supabase
-        .from("members")
+        .from("profiles")
         .select("*")
         .order("created_at", { ascending: false });
       if (data) setMembers(data);
@@ -32,17 +31,16 @@ const AdminMembers = () => {
 
   const filtered = members.filter(
     (m) =>
-      m.first_name.toLowerCase().includes(search.toLowerCase()) ||
-      m.last_name.toLowerCase().includes(search.toLowerCase()) ||
-      m.email.toLowerCase().includes(search.toLowerCase()) ||
-      m.faculty.toLowerCase().includes(search.toLowerCase())
+      (m.full_name?.toLowerCase() || "").includes(search.toLowerCase()) ||
+      (m.email?.toLowerCase() || "").includes(search.toLowerCase()) ||
+      (m.faculty?.toLowerCase() || "").includes(search.toLowerCase())
   );
 
   const exportCSV = () => {
-    const headers = ["First Name", "Last Name", "Email", "Phone", "Faculty", "Year", "Interests", "Registered"];
+    const headers = ["Name", "Email", "Phone", "Faculty", "Year", "Interests", "Registered"];
     const rows = members.map((m) => [
-      m.first_name, m.last_name, m.email, m.phone || "", m.faculty,
-      String(m.year_of_study), (m.interests || []).join("; "), new Date(m.created_at).toLocaleDateString(),
+      m.full_name || "", m.email || "", m.phone || "", m.faculty || "",
+      String(m.year_of_study || ""), (m.interests || []).join("; "), new Date(m.created_at).toLocaleDateString(),
     ]);
     const csv = [headers.join(","), ...rows.map((r) => r.map((c) => `"${c}"`).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -91,10 +89,10 @@ const AdminMembers = () => {
                 )}
                 {filtered.map((m) => (
                   <tr key={m.id} className="border-b border-border last:border-0 hover:bg-muted/30">
-                    <td className="px-4 py-3 font-medium text-foreground">{m.first_name} {m.last_name}</td>
+                    <td className="px-4 py-3 font-medium text-foreground">{m.full_name}</td>
                     <td className="px-4 py-3 text-muted-foreground">{m.email}</td>
-                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{m.faculty}</td>
-                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{m.year_of_study}</td>
+                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{m.faculty || "Not set"}</td>
+                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{m.year_of_study || "-"}</td>
                     <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
                       <div className="flex flex-wrap gap-1">
                         {(m.interests || []).map((i) => (
