@@ -405,11 +405,14 @@ const Hymns: React.FC = () => {
     }
   };
 
-  const handleSharePoster = () => {
+  const handleSharePoster = (verseCount: number = 3) => {
     if (!selected) return;
     const details: Record<string, string> = {};
-    if (selected.verses.length > 1) details["Verse 2"] = selected.verses[1].split(/\n \n/)[0];
-    if (selected.verses.length > 2) details["Verse 3"] = selected.verses[2].split(/\n \n/)[0];
+    const max = Math.min(verseCount, selected.verses.length);
+    // Verse 1 is shown as subtitle; include subsequent verses based on user choice
+    for (let i = 1; i < max; i++) {
+      details[`Verse ${i + 1}`] = selected.verses[i].split(/\n \n/)[0];
+    }
 
     setSharingPoster({
       title: `${selected.id}. ${selected.title}`,
