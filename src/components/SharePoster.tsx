@@ -452,19 +452,20 @@ const SharePoster: React.FC<PosterProps> = ({
                   )}
                 </div>
 
-                {/* Footer */}
+                {/* Footer — always visible, never shrinks */}
                 <div
                   style={{
-                    borderTop: "0.5px solid rgba(255,255,255,0.08)",
-                    paddingTop: isExpanded ? "8px" : "10px",
+                    borderTop: "0.5px solid rgba(212,168,83,0.25)",
+                    paddingTop: isExpanded ? "10px" : "12px",
                     textAlign: "center",
-                    marginTop: isExpanded ? "8px" : "12px",
+                    marginTop: isExpanded ? "12px" : "16px",
+                    flexShrink: 0,
                   }}
                 >
-                  <p style={{ color: "rgba(245,237,212,0.2)", fontSize: "5.5px", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: "2px" }}>
+                  <p style={{ color: "rgba(245,237,212,0.55)", fontSize: "6px", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: "3px", fontWeight: 600 }}>
                     Join us for fellowship & growth
                   </p>
-                  <p style={{ color: "#c9a44e", fontSize: isExpanded ? "7.5px" : "8.5px", fontWeight: 700, letterSpacing: "0.06em" }}>
+                  <p style={{ color: "#d4a853", fontSize: isExpanded ? "8.5px" : "9.5px", fontWeight: 700, letterSpacing: "0.06em" }}>
                     www.ucocsa.vercel.app
                   </p>
                 </div>
