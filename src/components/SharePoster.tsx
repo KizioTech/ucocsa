@@ -233,7 +233,7 @@ const SharePoster: React.FC<PosterProps> = ({
 
               {/* ── Layer 6: Poster content ── */}
               <div
-                className="absolute inset-0 flex flex-col"
+                className="relative flex flex-col flex-1 z-10"
                 style={{ padding: pad }}
               >
 
