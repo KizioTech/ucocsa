@@ -193,39 +193,48 @@ function AdminUploadPhotoDialog({ albumId, onSuccess }: { albumId: string; onSuc
     if (files.length === 0) return;
     setUploading(true);
     setProgress(0);
-    let successCount = 0;
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const ext = file.name.split(".").pop();
-        const path = `${albumId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
-        const { error: uploadError } = await supabase.storage.from("gallery").upload(path, file);
-        if (uploadError) { 
-          console.error("Storage upload error:", uploadError);
-          toast.error(`Error uploading ${file.name}: ${uploadError.message}`); 
-          continue; 
-        }
+      let completedCount = 0;
+      
+      const uploadPromises = files.map(async (file) => {
+        try {
+          const ext = file.name.split(".").pop();
+          const path = `${albumId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from("gallery")
+            .upload(path, file);
+            
+          if (uploadError) throw new Error(`Upload error for ${file.name}: ${uploadError.message}`);
 
-        const { data: urlData } = supabase.storage.from("gallery").getPublicUrl(path);
+          const { data: urlData } = supabase.storage
+            .from("gallery")
+            .getPublicUrl(path);
 
-        const { error: insertError } = await supabase.from("gallery_photos").insert({
-          album_id: albumId,
-          image_url: urlData.publicUrl,
-          uploaded_by: userId || null,
-          is_approved: true,
-        });
-        
-        if (!insertError) {
-          successCount++;
-        } else {
-          console.error("Database insert error:", insertError);
-          toast.error(`Error saving ${file.name}: ${insertError.message}`);
+          const { error: insertError } = await supabase.from("gallery_photos").insert({
+            album_id: albumId,
+            image_url: urlData.publicUrl,
+            uploaded_by: userId || null,
+            is_approved: true,
+          });
+
+          if (insertError) throw new Error(`Database error for ${file.name}: ${insertError.message}`);
+          
+          completedCount++;
+          setProgress(Math.round((completedCount / files.length) * 100));
+          return true;
+        } catch (err: any) {
+          toast.error(err.message);
+          return false;
         }
-        setProgress(Math.round(((i + 1) / files.length) * 100));
-      }
+      });
+
+      const results = await Promise.all(uploadPromises);
+      const successCount = results.filter(Boolean).length;
 
       if (successCount > 0) {
         toast.success(`Successfully uploaded ${successCount} photo(s)`);

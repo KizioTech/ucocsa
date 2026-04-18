@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const getNextService = () => {
   const now = new Date();
@@ -9,7 +9,7 @@ const getNextService = () => {
     const d = new Date(now);
     const daysUntilWed = (3 - day + 7) % 7 || 7;
     d.setDate(now.getDate() + daysUntilWed);
-    d.setHours(18, 0, 0, 0); // 6 PM local (assume CAT)
+    d.setHours(18, 0, 0, 0); // 6 PM local
     if (d <= now) d.setDate(d.getDate() + 7);
     return { date: d, label: "MidWeek Service" };
   };
@@ -33,24 +33,38 @@ const CountdownTimer = () => {
   const [target, setTarget] = useState(getNextService);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
+  const calculateTimeLeft = useCallback((targetDate: Date) => {
+    const diff = Math.max(0, targetDate.getTime() - Date.now());
+    return {
+      days: Math.floor(diff / 86400000),
+      hours: Math.floor((diff % 86400000) / 3600000),
+      minutes: Math.floor((diff % 3600000) / 60000),
+      seconds: Math.floor((diff % 60000) / 1000),
+      isExpired: diff === 0
+    };
+  }, []);
+
   useEffect(() => {
     const tick = () => {
-      const updated = getNextService();
-      if (updated.date.getTime() !== target.date.getTime()) {
-        setTarget(updated);
+      const result = calculateTimeLeft(target.date);
+      
+      if (result.isExpired) {
+        // Target reached, find next service
+        setTarget(getNextService());
+      } else {
+        setTimeLeft({
+          days: result.days,
+          hours: result.hours,
+          minutes: result.minutes,
+          seconds: result.seconds
+        });
       }
-      const diff = Math.max(0, updated.date.getTime() - Date.now());
-      setTimeLeft({
-        days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff % 86400000) / 3600000),
-        minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000) / 1000),
-      });
     };
+
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [target]);
+  }, [target.date, calculateTimeLeft]);
 
   const units = [
     { label: "Days", value: timeLeft.days },

@@ -58,24 +58,22 @@ const Messages = () => {
 
   useEffect(() => {
     if (!activeConvo) return;
-    fetchMessages(activeConvo.id);
 
     const channel = supabase
-      .channel(`messages-${activeConvo.id}`)
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-        filter: `conversation_id=eq.${activeConvo.id}`,
-      }, (payload) => {
-        const newMsg = payload.new as any;
-        setMessages((prev) => [...prev, {
-          id: newMsg.id,
-          content: newMsg.content,
-          sender_id: newMsg.sender_id,
-          created_at: newMsg.created_at,
-        }]);
-      })
+      .channel(`messages_convo_${activeConvo.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${activeConvo.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["messages", activeConvo.id] });
+          fetchMessages(activeConvo.id);
+        }
+      )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };

@@ -13,6 +13,7 @@ import Autoplay from "embla-carousel-autoplay";
 import heroBg from "@/assets/hero-bg.jpg";
 import SEO from "@/components/SEO";
 import ExecutiveTeam from "@/components/ExecutiveTeam";
+import VerseOfTheDay from "@/components/VerseOfTheDay";
 
 const quickLinks = [
   { to: "/events", icon: Calendar, label: "Events", desc: "View upcoming fellowships" },
@@ -29,110 +30,58 @@ const ministries = [
 ];
 
 const Index = () => {
-  // Dynamic events from database
-  const { data: events } = useQuery({
-    queryKey: ["homepage-events"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .gte("event_date", new Date().toISOString().split("T")[0])
-        .order("event_date", { ascending: true })
-        .limit(3);
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Dynamic announcements
-  const { data: announcements } = useQuery({
-    queryKey: ["homepage-announcements"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("announcements")
-        .select("*")
-        .eq("is_published", true)
-        .order("created_at", { ascending: false })
-        .limit(1);
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Dynamic blog posts
-  const { data: blogPosts } = useQuery({
-    queryKey: ["homepage-blog"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("is_published", true)
-        .order("published_at", { ascending: false })
-        .limit(3);
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Gallery highlights
-  const { data: highlightedAlbums } = useQuery({
-    queryKey: ["homepage-gallery-highlights"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("gallery_albums")
-        .select("*, photos:gallery_photos(id, image_url, caption, is_approved)")
-        .eq("is_highlighted", true)
-        .eq("is_published", true);
-      if (error) throw error;
-      
-      // Filter for approved photos and map to gallery_photos for the component
-      return data?.map(album => ({
-        ...album,
-        gallery_photos: (album.photos as any[])?.filter((p: any) => p.is_approved !== false) || []
-      }));
-    },
-  });
-
-  // Recent photos fallback
-  const { data: recentPhotos } = useQuery({
-    queryKey: ["homepage-recent-photos"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("gallery_photos")
-        .select("id, image_url, caption, is_approved, album:gallery_albums(title)")
-        .eq("is_approved", true)
-        .order("created_at", { ascending: false })
-        .limit(6);
-      if (error) throw error;
-      return data;
-    },
-  });
-  // Upcoming service programs
-  const { data: upcomingPrograms } = useQuery({
-    queryKey: ["homepage-programs"],
+  const { data: homeData, isLoading } = useQuery({
+    queryKey: ["homepage-combined-data"],
     queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
-      const { data, error } = await supabase
-        .from("service_programs")
-        .select("*")
-        .eq("is_published", true)
-        .gte("service_date", today)
-        .order("service_date", { ascending: true })
-        .limit(2);
-      if (error) throw error;
-      return data;
+      
+      const [
+        eventsRes,
+        announcementsRes,
+        blogRes,
+        albumsRes,
+        recentPhotosRes,
+        programsRes
+      ] = await Promise.all([
+        supabase.from("events").select("*").gte("event_date", today).order("event_date", { ascending: true }).limit(3),
+        supabase.from("announcements").select("*").eq("is_published", true).order("created_at", { ascending: false }).limit(1),
+        supabase.from("blog_posts").select("*").eq("is_published", true).order("published_at", { ascending: false }).limit(3),
+        supabase.from("gallery_albums").select("*, photos:gallery_photos(id, image_url, caption, is_approved)").eq("is_highlighted", true).eq("is_published", true),
+        supabase.from("gallery_photos").select("id, image_url, caption, is_approved, album:gallery_albums(title)").eq("is_approved", true).order("created_at", { ascending: false }).limit(6),
+        supabase.from("service_programs").select("*").eq("is_published", true).gte("service_date", today).order("service_date", { ascending: true }).limit(2)
+      ]);
+
+      return {
+        events: eventsRes.data || [],
+        latestAnnouncement: announcementsRes.data?.[0] || null,
+        blogPosts: blogRes.data || [],
+        highlightedAlbums: albumsRes.data?.map(album => ({
+          ...album,
+          gallery_photos: (album.photos as any[])?.filter((p: any) => p.is_approved !== false) || []
+        })) || [],
+        recentPhotos: recentPhotosRes.data || [],
+        upcomingPrograms: programsRes.data || []
+      };
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
-  let highlightPhotos = highlightedAlbums?.flatMap(
-    (album) => (album.gallery_photos as any[])?.map((p: any) => ({ ...p, albumTitle: album.title })) ?? []
-  ) ?? [];
+  const {
+    events = [],
+    latestAnnouncement = null,
+    blogPosts = [],
+    highlightedAlbums = [],
+    recentPhotos = [],
+    upcomingPrograms = []
+  } = homeData || {};
 
-  if (highlightPhotos.length === 0 && recentPhotos) {
+  let highlightPhotos = highlightedAlbums.flatMap(
+    (album) => (album.gallery_photos as any[])?.map((p: any) => ({ ...p, albumTitle: album.title })) ?? []
+  );
+
+  if (highlightPhotos.length === 0 && recentPhotos.length > 0) {
     highlightPhotos = recentPhotos.map((p: any) => ({ ...p, albumTitle: p.album?.title || "Gallery" }));
   }
-
-  const latestAnnouncement = announcements?.[0];
 
   return (
     <Layout>
@@ -180,7 +129,7 @@ const Index = () => {
             <CountdownTimer />
 
             {/* Upcoming Service Program Summary */}
-            {upcomingPrograms && upcomingPrograms.length > 0 && (
+            {upcomingPrograms.length > 0 && (
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
                 {upcomingPrograms.map((prog) => (
                   <Link key={prog.id} to="/events" className="bg-cream/10 backdrop-blur border border-cream/20 rounded-xl px-5 py-3 text-left max-w-xs hover:bg-cream/20 transition-colors">
@@ -214,6 +163,9 @@ const Index = () => {
           </div>
         </div>
       )}
+
+      {/* Verse of the Day */}
+      <VerseOfTheDay />
 
       {/* Gallery Highlights Carousel */}
       {highlightPhotos.length > 0 && (
@@ -274,7 +226,7 @@ const Index = () => {
         <div className="container">
           <SectionHeading title="Upcoming Events" subtitle="Join us for fellowship, worship, and community service." />
           <div className="grid md:grid-cols-3 gap-6">
-            {(events ?? []).map((evt, i) => (
+            {events.map((evt, i) => (
               <motion.div key={evt.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                 className="rounded-xl bg-card border border-border p-6 hover:shadow-lg transition-shadow">
                 <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">{evt.event_type}</span>
@@ -286,8 +238,13 @@ const Index = () => {
                 </div>
               </motion.div>
             ))}
-            {events?.length === 0 && (
+            {!isLoading && events.length === 0 && (
               <p className="col-span-full text-center text-muted-foreground py-8">No upcoming events. Check back soon!</p>
+            )}
+            {isLoading && (
+              <div className="col-span-full flex justify-center py-8">
+                 <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
             )}
           </div>
           <div className="text-center mt-8">
@@ -299,7 +256,7 @@ const Index = () => {
       </section>
 
       {/* Latest Blog Posts - Dynamic */}
-      {blogPosts && blogPosts.length > 0 && (
+      {blogPosts.length > 0 && (
         <section className="py-16 bg-muted/50">
           <div className="container">
             <SectionHeading title="Latest From Our Blog" subtitle="Devotionals, testimonies, and updates from the community." />

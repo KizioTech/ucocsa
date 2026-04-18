@@ -110,6 +110,7 @@ export type Database = {
       }
       blog_posts: {
         Row: {
+          author_id: string | null
           author_name: string
           category: string
           content: string
@@ -124,6 +125,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          author_id?: string | null
           author_name?: string
           category?: string
           content: string
@@ -138,6 +140,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          author_id?: string | null
           author_name?: string
           category?: string
           content?: string
@@ -151,7 +154,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversation_participants: {
         Row: {
@@ -688,6 +699,39 @@ export type Database = {
           theme?: string | null
           title?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          bio: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          order_index: number
+          role: string
+          whatsapp_number: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          order_index?: number
+          role: string
+          whatsapp_number?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          order_index?: number
+          role?: string
+          whatsapp_number?: string | null
         }
         Relationships: []
       }

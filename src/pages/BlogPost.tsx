@@ -37,7 +37,7 @@ const BlogPost = () => {
   const { data: post, isLoading } = useQuery({
     queryKey: ["blog-post", slug],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("blog_posts")
         .select("*, profiles!blog_posts_author_id_fkey(id, full_name, avatar_url)")
         .eq("slug", slug!)

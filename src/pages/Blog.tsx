@@ -12,7 +12,7 @@ const Blog = () => {
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["blog-posts"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("blog_posts")
         .select("*, profiles!blog_posts_author_id_fkey(full_name, avatar_url)")
         .eq("is_published", true)

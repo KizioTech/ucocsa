@@ -35,8 +35,16 @@ const NotificationBell: React.FC = () => {
   useEffect(() => {
     if (!latestAnnouncement) return;
 
-    const lastSeenId = localStorage.getItem("lastAnnouncementId");
-    const lastSeenAt = parseInt(localStorage.getItem("lastAnnouncementSeenAt") || "0");
+    let lastSeenId = null;
+    let lastSeenAt = 0;
+
+    try {
+      lastSeenId = localStorage.getItem("lastAnnouncementId");
+      lastSeenAt = parseInt(localStorage.getItem("lastAnnouncementSeenAt") || "0");
+    } catch (e) {
+      console.warn("localStorage access failed:", e);
+    }
+
     const now = Date.now();
     const announcementTime = new Date(latestAnnouncement.created_at).getTime();
 
@@ -55,8 +63,12 @@ const NotificationBell: React.FC = () => {
 
   const markAsRead = () => {
     if (latestAnnouncement) {
-      localStorage.setItem("lastAnnouncementId", latestAnnouncement.id);
-      localStorage.setItem("lastAnnouncementSeenAt", Date.now().toString());
+      try {
+        localStorage.setItem("lastAnnouncementId", latestAnnouncement.id);
+        localStorage.setItem("lastAnnouncementSeenAt", Date.now().toString());
+      } catch (e) {
+        console.warn("localStorage setItem failed:", e);
+      }
       setHasUnread(false);
     }
   };
