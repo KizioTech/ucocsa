@@ -152,6 +152,7 @@ const AdminPrograms = () => {
       bearers: [...(p.bearers || []), "", "", "", ""].slice(0, 4),
       last_prayer: p.last_prayer || "",
       announcements: p.announcements || "",
+      location: p.location || (p.service_type === "sunday" ? "Lecture Theater 2" : ""),
       is_published: p.is_published,
     });
     setDialogOpen(true);
