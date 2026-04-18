@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
       devOptions: {
         enabled: false,
       },
-      includeAssets: ["hymns-icon-192.png", "hymns-icon-512.png"],
+      includeAssets: ["icons/android/launchericon-192x192.png", "icons/android/launchericon-512x512.png", "icons/ios/180.png"],
       manifest: {
         name: "UCOCSA Hymns",
         short_name: "Hymns",
@@ -33,13 +33,13 @@ export default defineConfig(({ mode }) => ({
         orientation: "portrait",
         icons: [
           {
-            src: "/hymns-icon-192.png",
+            src: "/icons/android/launchericon-192x192.png",
             sizes: "192x192",
             type: "image/png",
             purpose: "any maskable",
           },
           {
-            src: "/hymns-icon-512.png",
+            src: "/icons/android/launchericon-512x512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any maskable",
