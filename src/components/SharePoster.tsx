@@ -333,9 +333,16 @@ const SharePoster: React.FC<PosterProps> = ({
 
                   {/* Subtitle */}
                   {subtitle && (
-                    <p style={{ color: "rgba(245,237,212,0.6)", fontSize: isExpanded ? "8px" : "9px", textAlign: "center", fontStyle: "italic", marginBottom: isExpanded ? "6px" : "8px", lineHeight: 1.4, padding: "0 8px" }}>
-                      {subtitle}
-                    </p>
+                    <div style={{ marginBottom: isExpanded ? "6px" : "8px", padding: "0 8px", width: "100%" }}>
+                      {type === "hymn" ? (
+                        <div style={{ textAlign: "left", paddingLeft: "10px", borderLeft: "1.5px solid rgba(212,168,83,0.25)" }}>
+                          <p style={{ color: "rgba(212,168,83,0.5)", fontSize: "6px", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "2px" }}>Verse 1</p>
+                          <p style={{ color: "rgba(245,237,212,0.82)", fontSize: isExpanded ? "8.5px" : "10px", lineHeight: 1.6, whiteSpace: "pre-line" }}>{subtitle}</p>
+                        </div>
+                      ) : (
+                        <p style={{ color: "rgba(245,237,212,0.6)", fontSize: isExpanded ? "8px" : "9px", textAlign: "center", fontStyle: "italic", lineHeight: 1.4 }}>{subtitle}</p>
+                      )}
+                    </div>
                   )}
 
                   {/* Details — hymn verses or program agenda */}
