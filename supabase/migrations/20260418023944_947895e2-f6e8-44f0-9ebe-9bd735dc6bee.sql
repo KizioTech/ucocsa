@@ -1,0 +1,1 @@
+ALTER TABLE public.service_programs ADD COLUMN IF NOT EXISTS location text DEFAULT 'Lecture Theater 2';
