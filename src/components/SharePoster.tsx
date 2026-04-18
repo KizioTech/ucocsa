@@ -216,7 +216,7 @@ const SharePoster: React.FC<PosterProps> = ({
               {/* ── Layer 5: White header band with organic wave boundary ── */}
               <div
                 className="absolute top-0 left-0 right-0 pointer-events-none"
-                style={{ height: isExpanded ? "22%" : "26%", position: "absolute" }}
+                style={{ height: isExpanded ? "120px" : "140px" }}
               >
                 {/* Matte white fill */}
                 <div className="absolute inset-0" style={{ background: "#ffffff" }} />
