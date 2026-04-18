@@ -12,6 +12,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import Autoplay from "embla-carousel-autoplay";
 import heroBg from "@/assets/hero-bg.jpg";
 import SEO from "@/components/SEO";
+import ExecutiveTeam from "@/components/ExecutiveTeam";
 
 const quickLinks = [
   { to: "/events", icon: Calendar, label: "Events", desc: "View upcoming fellowships" },
@@ -329,6 +330,9 @@ const Index = () => {
           </div>
         </section>
       )}
+
+      {/* Executive Team */}
+      <ExecutiveTeam />
 
       {/* Ministries */}
       <section className="py-16 bg-muted">
