@@ -241,9 +241,10 @@ const SharePoster: React.FC<PosterProps> = ({
                 <div
                   className="flex flex-col items-center"
                   style={{
-                    height: isExpanded ? "22%" : "26%",
+                    height: isExpanded ? "120px" : "140px",
                     justifyContent: "center",
                     paddingBottom: isExpanded ? "1rem" : "1.4rem",
+                    flexShrink: 0,
                   }}
                 >
                   <img
