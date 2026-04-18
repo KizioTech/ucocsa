@@ -5,7 +5,7 @@ import { Share2, Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import logo from "@/assets/ucocsa-logo.png";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -140,7 +140,8 @@ const SharePoster: React.FC<PosterProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden bg-transparent border-none shadow-none max-h-[95vh] overflow-y-auto">
+      <DialogContent aria-describedby={undefined} className="max-w-lg p-0 overflow-hidden bg-transparent border-none shadow-none max-h-[95vh] overflow-y-auto">
+        <DialogTitle className="sr-only">Share Poster Preview</DialogTitle>
         <div className="flex flex-col gap-4">
 
           {/* ── Scrollable preview wrapper (not captured by toPng) ── */}

@@ -113,7 +113,7 @@ const Events = () => {
         if (p.teaching) details["Teaching"] = p.teaching;
         if (p.preaching) details["Preaching"] = p.preaching;
         if (p.alter_call) details["Altar Call"] = p.alter_call;
-        if (p.holy_communion) details["Holy Communion"] = p.holy_communion;
+        if (p.holy_communion) details["Holy Communion and Offering"] = p.holy_communion;
         if (p.bearers && Array.isArray(p.bearers)) {
           const bearers = p.bearers.filter((b: string) => b && b.trim());
           if (bearers.length > 0) details["Bearers"] = bearers.join(", ");

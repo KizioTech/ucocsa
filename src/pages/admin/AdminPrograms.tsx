@@ -270,7 +270,7 @@ const AdminPrograms = () => {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent aria-describedby={undefined} className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit" : "New"} Service Program</DialogTitle>
           </DialogHeader>
@@ -359,7 +359,7 @@ const AdminPrograms = () => {
                     <div><Label>Teaching</Label><Input value={form.teaching} onChange={(e) => setForm({ ...form, teaching: e.target.value })} /></div>
                     <div><Label>Preaching</Label><Input value={form.preaching} onChange={(e) => setForm({ ...form, preaching: e.target.value })} /></div>
                     <div><Label>Alter Call</Label><Input value={form.alter_call} onChange={(e) => setForm({ ...form, alter_call: e.target.value })} /></div>
-                    <div><Label>Holy Communion</Label><Input value={form.holy_communion} onChange={(e) => setForm({ ...form, holy_communion: e.target.value })} /></div>
+                    <div><Label>Holy Communion and Offering</Label><Input value={form.holy_communion} onChange={(e) => setForm({ ...form, holy_communion: e.target.value })} /></div>
                   </div>
                   <div className="mt-4">
                     <Label>Bearers (up to 4)</Label>

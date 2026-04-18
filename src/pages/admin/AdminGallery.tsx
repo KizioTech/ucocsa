@@ -197,7 +197,11 @@ function AdminUploadPhotoDialog({ albumId, onSuccess }: { albumId: string; onSuc
         const ext = file.name.split(".").pop();
         const path = `${albumId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
         const { error: uploadError } = await supabase.storage.from("gallery").upload(path, file);
-        if (uploadError) { toast.error(`Error uploading ${file.name}`); continue; }
+        if (uploadError) { 
+          console.error("Storage upload error:", uploadError);
+          toast.error(`Error uploading ${file.name}: ${uploadError.message}`); 
+          continue; 
+        }
 
         const { data: urlData } = supabase.storage.from("gallery").getPublicUrl(path);
 
@@ -211,7 +215,8 @@ function AdminUploadPhotoDialog({ albumId, onSuccess }: { albumId: string; onSuc
         if (!insertError) {
           successCount++;
         } else {
-          toast.error(`Error saving ${file.name}`);
+          console.error("Database insert error:", insertError);
+          toast.error(`Error saving ${file.name}: ${insertError.message}`);
         }
         setProgress(Math.round(((i + 1) / files.length) * 100));
       }
@@ -257,6 +262,57 @@ function AdminUploadPhotoDialog({ albumId, onSuccess }: { albumId: string; onSuc
           <Button onClick={handleUpload} disabled={files.length === 0 || uploading} className="w-full">
             {uploading ? `Uploading (${progress}%)...` : `Upload ${files.length} Photo(s)`}
           </Button>
+
+          <div className="pt-4 border-t border-border mt-4">
+            <p className="text-sm text-foreground font-medium mb-2">Did you manually add files to Supabase?</p>
+            <Button 
+               variant="outline" 
+               className="w-full" 
+               onClick={async () => {
+                 setUploading(true);
+                 try {
+                   // List files in the bucket for this album
+                   const { data: filesData, error: listError } = await supabase.storage.from("gallery").list(albumId);
+                   if (listError) throw listError;
+                   
+                   let synced = 0;
+                   const { data: { session } } = await supabase.auth.getSession();
+                   
+                   for (const f of filesData || []) {
+                      // Skip weird empty objects or folders
+                      if (!f.name || f.name === ".emptyFolderPlaceholder") continue;
+                      
+                      const path = `${albumId}/${f.name}`;
+                      const { data: urlData } = supabase.storage.from("gallery").getPublicUrl(path);
+                      
+                      // Check if already in DB
+                      const { data: existing } = await supabase.from("gallery_photos").select("id").eq("image_url", urlData.publicUrl).single();
+                      
+                      if (!existing) {
+                        const { error: insErr } = await supabase.from("gallery_photos").insert({
+                          album_id: albumId,
+                          image_url: urlData.publicUrl,
+                          uploaded_by: session?.user?.id || null,
+                          is_approved: true,
+                        });
+                        if (!insErr) synced++;
+                      }
+                   }
+                   toast.success(`Synced ${synced} missing photos from bucket!`);
+                   setOpen(false);
+                   onSuccess();
+                 } catch(err: any) {
+                   toast.error(`Sync failed: ${err.message}`);
+                 } finally {
+                   setUploading(false);
+                 }
+               }}
+               disabled={uploading}
+            >
+              Sync missing photos from bucket
+            </Button>
+          </div>
+          
           <p className="text-xs text-muted-foreground">Photos are automatically approved when uploaded by an admin.</p>
         </div>
       </DialogContent>

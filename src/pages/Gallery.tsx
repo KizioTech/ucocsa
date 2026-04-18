@@ -37,7 +37,7 @@ const Gallery = () => {
     },
   });
 
-  const { data: albums } = useQuery({
+  const { data: albums, error: albumsError } = useQuery({
     queryKey: ["gallery-albums"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -50,7 +50,7 @@ const Gallery = () => {
     },
   });
 
-  const { data: albumPhotos, refetch: refetchPhotos } = useQuery({
+  const { data: albumPhotos, error: albumPhotosError, refetch: refetchPhotos } = useQuery({
     queryKey: ["gallery-photos", selectedAlbum],
     queryFn: async () => {
       if (!selectedAlbum) return [];
@@ -115,6 +115,12 @@ const Gallery = () => {
           )}
 
           {/* Album Grid or Album Detail */}
+          {albumsError && (
+             <div className="col-span-full text-center py-12 text-destructive">
+               <p className="font-bold">Failed to load albums:</p>
+               <pre className="mt-2 text-sm max-w-lg mx-auto whitespace-pre-wrap">{JSON.stringify(albumsError, null, 2)}</pre>
+             </div>
+          )}
           {selectedAlbum ? (
             <div>
               <button
@@ -130,6 +136,13 @@ const Gallery = () => {
 
               {/* Upload button for logged-in users */}
               {user && <UploadPhotoDialog albumId={selectedAlbum} onSuccess={refetchPhotos} />}
+
+              {albumPhotosError && (
+                 <div className="w-full text-center py-4 text-destructive">
+                   <p className="font-bold">Failed to load photos:</p>
+                   <pre className="mt-2 text-sm whitespace-pre-wrap">{JSON.stringify(albumPhotosError, null, 2)}</pre>
+                 </div>
+              )}
 
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {albumPhotos?.map((photo, i) => (
@@ -156,7 +169,9 @@ const Gallery = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {albums?.map((album, i) => (
+              {albums === undefined ? (
+                <p className="col-span-full text-center text-muted-foreground py-12">Loading albums...</p>
+              ) : albums?.map((album, i) => (
                 <motion.div
                   key={album.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -184,7 +199,7 @@ const Gallery = () => {
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{album.description}</p>
                     )}
                     <p className="text-xs text-primary mt-2">
-                      {Array.isArray(album.gallery_photos) ? (album.gallery_photos[0] as any)?.count ?? 0 : 0} photos
+                       {Array.isArray(album.gallery_photos) ? (album.gallery_photos[0] as any)?.count ?? 0 : 0} photos
                     </p>
                   </div>
                 </motion.div>
