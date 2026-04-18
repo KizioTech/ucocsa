@@ -391,7 +391,7 @@ const SharePoster: React.FC<PosterProps> = ({
                   {(date || time || location) && (
                     <div
                       style={{
-                        marginTop: "auto",
+                        marginTop: isExpanded ? "16px" : "20px",
                         paddingTop: isExpanded ? "8px" : "10px",
                         display: "flex",
                         flexDirection: "column",
