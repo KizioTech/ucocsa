@@ -82,6 +82,23 @@ const AdminPrograms = () => {
     (p) => !p.is_modified && new Date(p.service_date) >= new Date()
   ) ?? [];
 
+  // Recently-used locations (most-recent first, deduped, capped at 6)
+  const recentLocations = (() => {
+    const seen = new Set<string>();
+    const list: string[] = [];
+    for (const p of programs ?? []) {
+      const loc = (p.location || "").trim();
+      if (loc && !seen.has(loc)) {
+        seen.add(loc);
+        list.push(loc);
+        if (list.length >= 6) break;
+      }
+    }
+    // Always include the default if not present
+    if (!seen.has("Lecture Theater 2")) list.push("Lecture Theater 2");
+    return list;
+  })();
+
   const saveMutation = useMutation({
     mutationFn: async (data: typeof form & { id?: string }) => {
       const payload = {
@@ -310,6 +327,25 @@ const AdminPrograms = () => {
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
                 placeholder="e.g. Lecture Theater 2"
               />
+              {recentLocations.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  <span className="text-xs text-muted-foreground self-center">Recent:</span>
+                  {recentLocations.map((loc) => (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => setForm({ ...form, location: loc })}
+                      className={`text-xs px-2 py-1 rounded-full border transition-colors ${
+                        form.location === loc
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-muted text-muted-foreground border-border hover:bg-muted/70"
+                      }`}
+                    >
+                      {loc}
+                    </button>
+                  ))}
+                </div>
+              )}
               <p className="text-xs text-muted-foreground mt-1">Default for Sunday Gatherings: Lecture Theater 2.</p>
             </div>
 
