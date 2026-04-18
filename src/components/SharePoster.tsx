@@ -144,14 +144,14 @@ const SharePoster: React.FC<PosterProps> = ({
             ════════════════════════════════════════════════════════ */}
             <div
               ref={posterRef}
-              className={`w-full relative overflow-hidden rounded-sm shadow-2xl ${
-                isExpanded ? "max-w-sm aspect-[3/5]" : "max-w-sm aspect-[4/5]"
-              }`}
+              className="w-full max-w-sm relative overflow-hidden rounded-sm shadow-2xl"
               style={{
                 fontFamily: "'Outfit', sans-serif",
-                // Outer white border frame (print-quality inset)
                 outline: "2.5px solid rgba(255,255,255,0.92)",
                 outlineOffset: "-6px",
+                minHeight: isExpanded ? "640px" : "500px",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
 
