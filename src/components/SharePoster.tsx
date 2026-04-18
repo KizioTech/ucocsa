@@ -20,6 +20,8 @@ interface PosterProps {
   type: "program" | "hymn";
   isOpen: boolean;
   onClose: () => void;
+  /** Deep link to the specific item being shared (included in Share Now) */
+  url?: string | null;
 }
 
 type PosterSize = "compact" | "expanded";
@@ -73,7 +75,7 @@ const NOISE_BG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='ht
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const SharePoster: React.FC<PosterProps> = ({
-  title, subtitle, date, time, location, theme, details, type, isOpen, onClose,
+  title, subtitle, date, time, location, theme, details, type, isOpen, onClose, url,
 }) => {
   const posterRef = useRef<HTMLDivElement>(null);
   const posterSize = getPosterSize({ title, subtitle, date, time, location, theme, details, type });
@@ -113,11 +115,16 @@ const SharePoster: React.FC<PosterProps> = ({
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], "poster.png", { type: "image/png" });
 
+      // Build the share text — include the deep link so recipients can open the page
+      const shareUrl = url || window.location.href;
+      const shareText = `Check out this ${type} from UCOCSA\n${shareUrl}`;
+
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           files: [file],
           title,
-          text: `Check out this ${type} from UCOCSA`,
+          text: shareText,
+          url: shareUrl,
         });
       } else {
         await handleDownload();

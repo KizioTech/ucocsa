@@ -175,6 +175,7 @@ const BlogPost = () => {
         description={post.excerpt || post.content.slice(0, 160)}
         image={post.cover_image_url || undefined}
         type="article"
+        url={`https://ucocsa.vercel.app/blog/${post.slug}`}
         schema={{
           "@context": "https://schema.org",
           "@type": "BlogPosting",

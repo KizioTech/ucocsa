@@ -443,7 +443,8 @@ const Hymns: React.FC = () => {
       subtitle: verse1Body,
       theme: selected.author,
       details: Object.keys(details).length > 0 ? details : null,
-      type: "hymn"
+      type: "hymn",
+      url: window.location.href,
     });
   };
 

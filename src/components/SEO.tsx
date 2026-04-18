@@ -6,6 +6,8 @@ interface SEOProps {
   name?: string;
   type?: string;
   image?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   url?: string;
   keywords?: string;
   schema?: Record<string, any>;
@@ -17,6 +19,8 @@ export default function SEO({
   name = "UCOCSA", 
   type = "website", 
   image = "https://ucocsa.vercel.app/og-image.png",
+  imageWidth = 1200,
+  imageHeight = 630,
   url = "https://ucocsa.vercel.app/",
   keywords = "church of christ, Unima church of christ, church of christ malawi, COC, C.O.C., namikango mission, UCOCSA, UNIMA, University of Malawi, Christian, Student Fellowship, Chanco, College Fellowship, Christian Organization",
   schema
@@ -36,7 +40,12 @@ export default function SEO({
       <meta property="og:type" content={type} />
       <meta property="og:url" content={url} />
       <meta property="og:image" content={image} />
+      <meta property="og:image:width" content={String(imageWidth)} />
+      <meta property="og:image:height" content={String(imageHeight)} />
+      <meta property="og:image:type" content="image/png" />
+      <meta property="og:image:alt" content={fullTitle} />
       <meta property="og:site_name" content={name} />
+      <meta property="og:locale" content="en_US" />
       
       {/* Twitter tags */}
       <meta name="twitter:creator" content={name} />
@@ -44,6 +53,7 @@ export default function SEO({
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
+      <meta name="twitter:image:alt" content={fullTitle} />
       
       {/* JSON-LD Schema */}
       {schema && (

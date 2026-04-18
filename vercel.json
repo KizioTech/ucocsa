@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/blog/:slug", "destination": "/api/og-blog" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -136,7 +136,8 @@ const Events = () => {
       time: formatTime(evt.event_time),
       location: evt.location || "UNIMA Campus",
       details: Object.keys(details).length > 0 ? details : null,
-      type: "program"
+      type: "program",
+      url: window.location.href,
     });
   };
 
