@@ -22,7 +22,7 @@ const AdminGallery = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gallery_albums")
-        .select("*, gallery_photos(count)")
+        .select("*, gallery_photos(id, image_url)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -135,11 +135,16 @@ const AdminGallery = () => {
 
         {/* Albums list */}
         <div className="grid gap-4">
-          {albums?.map((album) => (
+          {albums?.map((album) => {
+            const photos = album.gallery_photos as any[] || [];
+            const photoCount = photos.length;
+            const coverUrl = album.cover_image_url || photos[0]?.image_url;
+
+            return (
             <div key={album.id} className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card">
               <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                {album.cover_image_url ? (
-                  <img src={album.cover_image_url} alt="" className="w-full h-full object-cover" />
+                {coverUrl ? (
+                  <img src={coverUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <Image size={24} className="text-muted-foreground" />
                 )}
@@ -147,7 +152,7 @@ const AdminGallery = () => {
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-foreground truncate">{album.title}</h3>
                 <p className="text-xs text-muted-foreground">
-                  {(album.gallery_photos as any)?.[0]?.count ?? 0} photos
+                  {photoCount} photos
                   {album.is_highlighted && " • Highlighted"}
                   {!album.is_published && " • Draft"}
                 </p>
@@ -167,7 +172,8 @@ const AdminGallery = () => {
                 </ConfirmAction>
               </div>
             </div>
-          ))}
+            );
+          })}
           {!isLoading && albums?.length === 0 && (
             <p className="text-center text-muted-foreground py-12">No albums yet. Create one to get started!</p>
           )}

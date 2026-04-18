@@ -24,7 +24,7 @@ const Gallery = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gallery_albums")
-        .select("*, photos:gallery_photos(id, image_url, caption)")
+        .select("*, photos:gallery_photos(id, image_url, caption, is_approved)")
         .eq("is_highlighted", true)
         .eq("is_published", true);
       if (error) throw error;
@@ -42,7 +42,7 @@ const Gallery = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gallery_albums")
-        .select("*, gallery_photos(count)")
+        .select("*, gallery_photos(id, image_url, is_approved)")
         .eq("is_published", true)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -171,7 +171,11 @@ const Gallery = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
               {albums === undefined ? (
                 <p className="col-span-full text-center text-muted-foreground py-12">Loading albums...</p>
-              ) : albums?.map((album, i) => (
+              ) : albums?.map((album, i) => {
+                const approvedPhotos = (album.gallery_photos as any[])?.filter((p: any) => p.is_approved !== false) || [];
+                const coverUrl = album.cover_image_url || approvedPhotos[0]?.image_url;
+
+                return (
                 <motion.div
                   key={album.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -182,9 +186,9 @@ const Gallery = () => {
                   onClick={() => setSelectedAlbum(album.id)}
                 >
                   <div className="aspect-video bg-muted flex items-center justify-center overflow-hidden">
-                    {album.cover_image_url ? (
+                    {coverUrl ? (
                       <img
-                        src={album.cover_image_url}
+                        src={coverUrl}
                         alt={album.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
@@ -199,11 +203,12 @@ const Gallery = () => {
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{album.description}</p>
                     )}
                     <p className="text-xs text-primary mt-2">
-                       {Array.isArray(album.gallery_photos) ? (album.gallery_photos[0] as any)?.count ?? 0 : 0} photos
+                       {approvedPhotos.length} photos
                     </p>
                   </div>
                 </motion.div>
-              ))}
+              );
+              })}
               {albums?.length === 0 && (
                 <p className="col-span-full text-center text-muted-foreground py-12">No albums yet. Check back soon!</p>
               )}

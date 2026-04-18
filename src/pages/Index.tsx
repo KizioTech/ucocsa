@@ -92,6 +92,20 @@ const Index = () => {
     },
   });
 
+  // Recent photos fallback
+  const { data: recentPhotos } = useQuery({
+    queryKey: ["homepage-recent-photos"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("gallery_photos")
+        .select("id, image_url, caption, is_approved, album:gallery_albums(title)")
+        .eq("is_approved", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (error) throw error;
+      return data;
+    },
+  });
   // Upcoming service programs
   const { data: upcomingPrograms } = useQuery({
     queryKey: ["homepage-programs"],
@@ -109,9 +123,13 @@ const Index = () => {
     },
   });
 
-  const highlightPhotos = highlightedAlbums?.flatMap(
+  let highlightPhotos = highlightedAlbums?.flatMap(
     (album) => (album.gallery_photos as any[])?.map((p: any) => ({ ...p, albumTitle: album.title })) ?? []
   ) ?? [];
+
+  if (highlightPhotos.length === 0 && recentPhotos) {
+    highlightPhotos = recentPhotos.map((p: any) => ({ ...p, albumTitle: p.album?.title || "Gallery" }));
+  }
 
   const latestAnnouncement = announcements?.[0];
 
