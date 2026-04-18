@@ -144,14 +144,14 @@ const SharePoster: React.FC<PosterProps> = ({
             ════════════════════════════════════════════════════════ */}
             <div
               ref={posterRef}
-              className={`w-full relative overflow-hidden rounded-sm shadow-2xl ${
-                isExpanded ? "max-w-sm aspect-[3/5]" : "max-w-sm aspect-[4/5]"
-              }`}
+              className="w-full max-w-sm relative overflow-hidden rounded-sm shadow-2xl"
               style={{
                 fontFamily: "'Outfit', sans-serif",
-                // Outer white border frame (print-quality inset)
                 outline: "2.5px solid rgba(255,255,255,0.92)",
                 outlineOffset: "-6px",
+                minHeight: isExpanded ? "640px" : "500px",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
 
@@ -216,7 +216,7 @@ const SharePoster: React.FC<PosterProps> = ({
               {/* ── Layer 5: White header band with organic wave boundary ── */}
               <div
                 className="absolute top-0 left-0 right-0 pointer-events-none"
-                style={{ height: isExpanded ? "22%" : "26%", position: "absolute" }}
+                style={{ height: isExpanded ? "120px" : "140px" }}
               >
                 {/* Matte white fill */}
                 <div className="absolute inset-0" style={{ background: "#ffffff" }} />
@@ -233,7 +233,7 @@ const SharePoster: React.FC<PosterProps> = ({
 
               {/* ── Layer 6: Poster content ── */}
               <div
-                className="absolute inset-0 flex flex-col"
+                className="relative flex flex-col flex-1 z-10"
                 style={{ padding: pad }}
               >
 
@@ -241,9 +241,10 @@ const SharePoster: React.FC<PosterProps> = ({
                 <div
                   className="flex flex-col items-center"
                   style={{
-                    height: isExpanded ? "22%" : "26%",
+                    height: isExpanded ? "120px" : "140px",
                     justifyContent: "center",
                     paddingBottom: isExpanded ? "1rem" : "1.4rem",
+                    flexShrink: 0,
                   }}
                 >
                   <img
@@ -390,7 +391,7 @@ const SharePoster: React.FC<PosterProps> = ({
                   {(date || time || location) && (
                     <div
                       style={{
-                        marginTop: "auto",
+                        marginTop: isExpanded ? "16px" : "20px",
                         paddingTop: isExpanded ? "8px" : "10px",
                         display: "flex",
                         flexDirection: "column",
