@@ -310,6 +310,25 @@ const AdminPrograms = () => {
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
                 placeholder="e.g. Lecture Theater 2"
               />
+              {recentLocations.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  <span className="text-xs text-muted-foreground self-center">Recent:</span>
+                  {recentLocations.map((loc) => (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => setForm({ ...form, location: loc })}
+                      className={`text-xs px-2 py-1 rounded-full border transition-colors ${
+                        form.location === loc
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-muted text-muted-foreground border-border hover:bg-muted/70"
+                      }`}
+                    >
+                      {loc}
+                    </button>
+                  ))}
+                </div>
+              )}
               <p className="text-xs text-muted-foreground mt-1">Default for Sunday Gatherings: Lecture Theater 2.</p>
             </div>
 
