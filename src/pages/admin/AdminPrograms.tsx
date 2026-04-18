@@ -31,6 +31,7 @@ type ServiceProgram = {
   bearers: string[] | null;
   last_prayer: string | null;
   announcements: string | null;
+  location: string | null;
   is_modified: boolean;
   is_published: boolean;
   created_at: string;
@@ -53,6 +54,7 @@ const emptyForm = {
   bearers: ["", "", "", ""],
   last_prayer: "",
   announcements: "",
+  location: "Lecture Theater 2",
   is_published: false,
 };
 
