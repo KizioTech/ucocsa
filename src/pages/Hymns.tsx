@@ -409,14 +409,38 @@ const Hymns: React.FC = () => {
     if (!selected) return;
     const details: Record<string, string> = {};
     const max = Math.min(verseCount, selected.verses.length);
-    // Verse 1 is shown as subtitle; include subsequent verses based on user choice
+
+    // Detect global chorus (chorus attached only to verse 1, verses>1 don't have chorus)
+    const hasGlobalChorus =
+      selected.verses.length > 1 &&
+      selected.verses[0].includes("\n \n") &&
+      !selected.verses[1].includes("\n \n");
+    const globalChorus = hasGlobalChorus
+      ? selected.verses[0].split(/\n \n/).slice(1).join("\n \n")
+      : "";
+
+    // Verse 1 -> subtitle (verse part only). Add chorus separately right after.
+    const verse1Body = selected.verses[0].split(/\n \n/)[0];
+
+    if (hasGlobalChorus) {
+      details["Chorus"] = globalChorus;
+    } else {
+      // Verse 1 may have its own chorus (per-verse choruses)
+      const v1Parts = selected.verses[0].split(/\n \n/);
+      if (v1Parts.length > 1) details["Chorus"] = v1Parts.slice(1).join("\n \n");
+    }
+
     for (let i = 1; i < max; i++) {
-      details[`Verse ${i + 1}`] = selected.verses[i].split(/\n \n/)[0];
+      const parts = selected.verses[i].split(/\n \n/);
+      details[`Verse ${i + 1}`] = parts[0];
+      if (!hasGlobalChorus && parts.length > 1) {
+        details[`Chorus ${i + 1}`] = parts.slice(1).join("\n \n");
+      }
     }
 
     setSharingPoster({
       title: `${selected.id}. ${selected.title}`,
-      subtitle: selected.verses[0].split(/\n \n/)[0],
+      subtitle: verse1Body,
       theme: selected.author,
       details: Object.keys(details).length > 0 ? details : null,
       type: "hymn"
