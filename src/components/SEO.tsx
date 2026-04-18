@@ -18,7 +18,7 @@ export default function SEO({
   description = "A Christ-centered community nurturing faith, academic excellence, and lifelong fellowship at the University of Malawi.", 
   name = "UCOCSA", 
   type = "website", 
-  image = "https://ucocsa.vercel.app/og-image.png",
+  image = "https://ucocsa.vercel.app/og-image.jpg",
   imageWidth = 1200,
   imageHeight = 630,
   url = "https://ucocsa.vercel.app/",

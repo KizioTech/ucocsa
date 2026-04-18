@@ -36,7 +36,7 @@ export default async function handler(req, res) {
         
         const title = post.title || 'UCOCSA Blog';
         const description = post.excerpt || (post.content ? post.content.substring(0, 160) : '');
-        const image = post.cover_image_url || `${appUrl}og-image.png`;
+        const image = post.cover_image_url || `${appUrl}og-image.jpg`;
         const postUrl = `${appUrl}blog/${slug}`;
 
         // Replace <title>
