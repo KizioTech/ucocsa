@@ -82,6 +82,23 @@ const AdminPrograms = () => {
     (p) => !p.is_modified && new Date(p.service_date) >= new Date()
   ) ?? [];
 
+  // Recently-used locations (most-recent first, deduped, capped at 6)
+  const recentLocations = (() => {
+    const seen = new Set<string>();
+    const list: string[] = [];
+    for (const p of programs ?? []) {
+      const loc = (p.location || "").trim();
+      if (loc && !seen.has(loc)) {
+        seen.add(loc);
+        list.push(loc);
+        if (list.length >= 6) break;
+      }
+    }
+    // Always include the default if not present
+    if (!seen.has("Lecture Theater 2")) list.push("Lecture Theater 2");
+    return list;
+  })();
+
   const saveMutation = useMutation({
     mutationFn: async (data: typeof form & { id?: string }) => {
       const payload = {
