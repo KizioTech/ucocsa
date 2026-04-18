@@ -632,6 +632,7 @@ export type Database = {
           is_published: boolean
           last_prayer: string | null
           leading_verses: string | null
+          location: string | null
           preaching: string | null
           service_date: string
           service_type: string
@@ -655,6 +656,7 @@ export type Database = {
           is_published?: boolean
           last_prayer?: string | null
           leading_verses?: string | null
+          location?: string | null
           preaching?: string | null
           service_date: string
           service_type?: string
@@ -678,6 +680,7 @@ export type Database = {
           is_published?: boolean
           last_prayer?: string | null
           leading_verses?: string | null
+          location?: string | null
           preaching?: string | null
           service_date?: string
           service_type?: string

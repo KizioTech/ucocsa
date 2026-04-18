@@ -333,9 +333,16 @@ const SharePoster: React.FC<PosterProps> = ({
 
                   {/* Subtitle */}
                   {subtitle && (
-                    <p style={{ color: "rgba(245,237,212,0.6)", fontSize: isExpanded ? "8px" : "9px", textAlign: "center", fontStyle: "italic", marginBottom: isExpanded ? "6px" : "8px", lineHeight: 1.4, padding: "0 8px" }}>
-                      {subtitle}
-                    </p>
+                    <div style={{ marginBottom: isExpanded ? "6px" : "8px", padding: "0 8px", width: "100%" }}>
+                      {type === "hymn" ? (
+                        <div style={{ textAlign: "left", paddingLeft: "10px", borderLeft: "1.5px solid rgba(212,168,83,0.25)" }}>
+                          <p style={{ color: "rgba(212,168,83,0.5)", fontSize: "6px", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "2px" }}>Verse 1</p>
+                          <p style={{ color: "rgba(245,237,212,0.82)", fontSize: isExpanded ? "8.5px" : "10px", lineHeight: 1.6, whiteSpace: "pre-line" }}>{subtitle}</p>
+                        </div>
+                      ) : (
+                        <p style={{ color: "rgba(245,237,212,0.6)", fontSize: isExpanded ? "8px" : "9px", textAlign: "center", fontStyle: "italic", lineHeight: 1.4 }}>{subtitle}</p>
+                      )}
+                    </div>
                   )}
 
                   {/* Details — hymn verses or program agenda */}
@@ -351,14 +358,35 @@ const SharePoster: React.FC<PosterProps> = ({
                         gap: isExpanded ? "7px" : "6px",
                       }}
                     >
-                      {Object.entries(details).map(([key, value]) =>
-                        type === "hymn" ? (
-                          /* Hymn verse row */
-                          <div key={key} style={{ textAlign: "left", paddingLeft: "8px", borderLeft: "1.5px solid rgba(212,168,83,0.25)" }}>
-                            <p style={{ color: "rgba(212,168,83,0.5)", fontSize: "6px", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "2px" }}>
+                      {Object.entries(details).map(([key, value]) => {
+                        const isChorus = type === "hymn" && /chorus/i.test(key);
+                        return type === "hymn" ? (
+                          /* Hymn verse / chorus row */
+                          <div
+                            key={key}
+                            style={{
+                              textAlign: "left",
+                              paddingLeft: "10px",
+                              borderLeft: isChorus
+                                ? "1.5px solid rgba(212,168,83,0.55)"
+                                : "1.5px solid rgba(212,168,83,0.25)",
+                              background: isChorus ? "rgba(212,168,83,0.04)" : "transparent",
+                              padding: isChorus ? "4px 8px 4px 10px" : "0 0 0 10px",
+                            }}
+                          >
+                            <p style={{ color: "rgba(212,168,83,0.6)", fontSize: "6px", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "2px", fontWeight: 600 }}>
                               {key}
                             </p>
-                            <p style={{ color: "rgba(245,237,212,0.78)", fontSize: isExpanded ? "8.5px" : "9px", lineHeight: 1.65, fontStyle: "italic" }}>
+                            <p
+                              style={{
+                                color: isChorus ? "rgba(245,237,212,0.92)" : "rgba(245,237,212,0.82)",
+                                fontSize: isExpanded ? "8.5px" : "9px",
+                                lineHeight: 1.65,
+                                fontStyle: isChorus ? "italic" : "normal",
+                                fontWeight: isChorus ? 500 : 400,
+                                whiteSpace: "pre-line",
+                              }}
+                            >
                               {String(value)}
                             </p>
                           </div>
@@ -382,8 +410,8 @@ const SharePoster: React.FC<PosterProps> = ({
                               {String(value)}
                             </span>
                           </div>
-                        )
-                      )}
+                        );
+                      })}
                     </div>
                   )}
 
@@ -424,19 +452,20 @@ const SharePoster: React.FC<PosterProps> = ({
                   )}
                 </div>
 
-                {/* Footer */}
+                {/* Footer — always visible, never shrinks */}
                 <div
                   style={{
-                    borderTop: "0.5px solid rgba(255,255,255,0.08)",
-                    paddingTop: isExpanded ? "8px" : "10px",
+                    borderTop: "0.5px solid rgba(212,168,83,0.25)",
+                    paddingTop: isExpanded ? "10px" : "12px",
                     textAlign: "center",
-                    marginTop: isExpanded ? "8px" : "12px",
+                    marginTop: isExpanded ? "12px" : "16px",
+                    flexShrink: 0,
                   }}
                 >
-                  <p style={{ color: "rgba(245,237,212,0.2)", fontSize: "5.5px", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: "2px" }}>
+                  <p style={{ color: "rgba(245,237,212,0.55)", fontSize: "6px", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: "3px", fontWeight: 600 }}>
                     Join us for fellowship & growth
                   </p>
-                  <p style={{ color: "#c9a44e", fontSize: isExpanded ? "7.5px" : "8.5px", fontWeight: 700, letterSpacing: "0.06em" }}>
+                  <p style={{ color: "#d4a853", fontSize: isExpanded ? "8.5px" : "9.5px", fontWeight: 700, letterSpacing: "0.06em" }}>
                     www.ucocsa.vercel.app
                   </p>
                 </div>

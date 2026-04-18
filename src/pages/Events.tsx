@@ -68,13 +68,13 @@ const Events = () => {
       program: null as any,
     }));
 
-    const fixed = (programs ?? []).map((p) => ({
+    const fixed = (programs ?? []).map((p: any) => ({
       id: `program-${p.id}`,
       title: p.title || (p.service_type === "sunday" ? "Sunday Gathering" : "MidWeek Fellowship"),
       description: p.theme ? `Theme: ${p.theme}` : (p.leading_verses ? `Scripture: ${p.leading_verses}` : null),
       event_date: p.service_date,
       event_time: p.service_type === "sunday" ? "08:00" : "18:00",
-      location: null,
+      location: p.location || (p.service_type === "sunday" ? "Lecture Theater 2" : null),
       event_type: p.service_type === "sunday" ? "Sunday Service" : "MidWeek Service",
       is_fixed: true,
       program: p,

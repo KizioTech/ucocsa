@@ -31,6 +31,7 @@ type ServiceProgram = {
   bearers: string[] | null;
   last_prayer: string | null;
   announcements: string | null;
+  location: string | null;
   is_modified: boolean;
   is_published: boolean;
   created_at: string;
@@ -53,6 +54,7 @@ const emptyForm = {
   bearers: ["", "", "", ""],
   last_prayer: "",
   announcements: "",
+  location: "Lecture Theater 2",
   is_published: false,
 };
 
@@ -98,6 +100,7 @@ const AdminPrograms = () => {
         bearers: data.bearers.filter(Boolean),
         last_prayer: data.last_prayer || null,
         announcements: data.announcements || null,
+        location: data.location || null,
         is_published: data.is_published,
         is_modified: true,
       };
@@ -149,6 +152,7 @@ const AdminPrograms = () => {
       bearers: [...(p.bearers || []), "", "", "", ""].slice(0, 4),
       last_prayer: p.last_prayer || "",
       announcements: p.announcements || "",
+      location: p.location || (p.service_type === "sunday" ? "Lecture Theater 2" : ""),
       is_published: p.is_published,
     });
     setDialogOpen(true);
@@ -297,6 +301,16 @@ const AdminPrograms = () => {
                 <Label>Facilitator</Label>
                 <Input value={form.facilitator} onChange={(e) => setForm({ ...form, facilitator: e.target.value })} placeholder="Name" />
               </div>
+            </div>
+
+            <div>
+              <Label>Location / Room</Label>
+              <Input
+                value={form.location}
+                onChange={(e) => setForm({ ...form, location: e.target.value })}
+                placeholder="e.g. Lecture Theater 2"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Default for Sunday Gatherings: Lecture Theater 2.</p>
             </div>
 
             {form.service_type === "sunday" && (
