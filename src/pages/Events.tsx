@@ -109,12 +109,23 @@ const Events = () => {
       const p = evt.program;
       if (p.service_type === "sunday") {
         if (p.convener) details["Convener"] = p.convener;
+        if (p.first_prayer) details["First Prayer"] = p.first_prayer;
         if (p.teaching) details["Teaching"] = p.teaching;
         if (p.preaching) details["Preaching"] = p.preaching;
         if (p.alter_call) details["Altar Call"] = p.alter_call;
+        if (p.holy_communion) details["Holy Communion"] = p.holy_communion;
+        if (p.bearers && Array.isArray(p.bearers)) {
+          const bearers = p.bearers.filter((b: string) => b && b.trim());
+          if (bearers.length > 0) details["Bearers"] = bearers.join(", ");
+        }
+        if (p.last_prayer) details["Last Prayer"] = p.last_prayer;
+        if (p.announcements) details["Announcements"] = p.announcements;
       } else {
         if (p.facilitator) details["Facilitator"] = p.facilitator;
         if (p.leading_verses) details["Scripture"] = p.leading_verses;
+        if (p.first_prayer) details["Opening Prayer"] = p.first_prayer;
+        if (p.last_prayer) details["Closing Prayer"] = p.last_prayer;
+        if (p.announcements) details["Announcements"] = p.announcements;
       }
     }
 
