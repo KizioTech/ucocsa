@@ -100,6 +100,7 @@ const AdminPrograms = () => {
         bearers: data.bearers.filter(Boolean),
         last_prayer: data.last_prayer || null,
         announcements: data.announcements || null,
+        location: data.location || null,
         is_published: data.is_published,
         is_modified: true,
       };
