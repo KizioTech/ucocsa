@@ -550,9 +550,25 @@ const Hymns: React.FC = () => {
                     <DropdownMenuItem onClick={handleShareText} className="gap-2 cursor-pointer">
                       <Clipboard size={14} /> Copy as Text
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleSharePoster} className="gap-2 cursor-pointer">
-                      <ImageIcon size={14} /> Share as Image
+                    <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-t mt-1">Share as Image</div>
+                    <DropdownMenuItem onClick={() => handleSharePoster(1)} className="gap-2 cursor-pointer pl-4">
+                      <ImageIcon size={14} /> Verse 1 only
                     </DropdownMenuItem>
+                    {selected && selected.verses.length >= 2 && (
+                      <DropdownMenuItem onClick={() => handleSharePoster(2)} className="gap-2 cursor-pointer pl-4">
+                        <ImageIcon size={14} /> First 2 verses
+                      </DropdownMenuItem>
+                    )}
+                    {selected && selected.verses.length >= 3 && (
+                      <DropdownMenuItem onClick={() => handleSharePoster(3)} className="gap-2 cursor-pointer pl-4">
+                        <ImageIcon size={14} /> First 3 verses
+                      </DropdownMenuItem>
+                    )}
+                    {selected && selected.verses.length > 3 && (
+                      <DropdownMenuItem onClick={() => handleSharePoster(selected.verses.length)} className="gap-2 cursor-pointer pl-4">
+                        <ImageIcon size={14} /> All {selected.verses.length} verses
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
 
