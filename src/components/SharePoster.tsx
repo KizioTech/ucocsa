@@ -358,14 +358,35 @@ const SharePoster: React.FC<PosterProps> = ({
                         gap: isExpanded ? "7px" : "6px",
                       }}
                     >
-                      {Object.entries(details).map(([key, value]) =>
-                        type === "hymn" ? (
-                          /* Hymn verse row */
-                          <div key={key} style={{ textAlign: "left", paddingLeft: "8px", borderLeft: "1.5px solid rgba(212,168,83,0.25)" }}>
-                            <p style={{ color: "rgba(212,168,83,0.5)", fontSize: "6px", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "2px" }}>
+                      {Object.entries(details).map(([key, value]) => {
+                        const isChorus = type === "hymn" && /chorus/i.test(key);
+                        return type === "hymn" ? (
+                          /* Hymn verse / chorus row */
+                          <div
+                            key={key}
+                            style={{
+                              textAlign: "left",
+                              paddingLeft: "10px",
+                              borderLeft: isChorus
+                                ? "1.5px solid rgba(212,168,83,0.55)"
+                                : "1.5px solid rgba(212,168,83,0.25)",
+                              background: isChorus ? "rgba(212,168,83,0.04)" : "transparent",
+                              padding: isChorus ? "4px 8px 4px 10px" : "0 0 0 10px",
+                            }}
+                          >
+                            <p style={{ color: "rgba(212,168,83,0.6)", fontSize: "6px", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "2px", fontWeight: 600 }}>
                               {key}
                             </p>
-                            <p style={{ color: "rgba(245,237,212,0.78)", fontSize: isExpanded ? "8.5px" : "9px", lineHeight: 1.65, fontStyle: "italic" }}>
+                            <p
+                              style={{
+                                color: isChorus ? "rgba(245,237,212,0.92)" : "rgba(245,237,212,0.82)",
+                                fontSize: isExpanded ? "8.5px" : "9px",
+                                lineHeight: 1.65,
+                                fontStyle: isChorus ? "italic" : "normal",
+                                fontWeight: isChorus ? 500 : 400,
+                                whiteSpace: "pre-line",
+                              }}
+                            >
                               {String(value)}
                             </p>
                           </div>
@@ -389,8 +410,8 @@ const SharePoster: React.FC<PosterProps> = ({
                               {String(value)}
                             </span>
                           </div>
-                        )
-                      )}
+                        );
+                      })}
                     </div>
                   )}
 
