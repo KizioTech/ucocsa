@@ -47,13 +47,14 @@ const Profile = () => {
         ]);
 
         if (profileRes.data) {
-          setProfile(profileRes.data);
-          setFullName(profileRes.data.full_name || "");
-          setAvatarUrl(profileRes.data.avatar_url || "");
-          setFaculty(profileRes.data.faculty || "");
-          setYearOfStudy(String(profileRes.data.year_of_study || 1));
-          setInterests((profileRes.data.interests || []).join(", "));
-          setPhone(profileRes.data.phone || "");
+          const pData = profileRes.data as any;
+          setProfile(pData);
+          setFullName(pData.full_name || "");
+          setAvatarUrl(pData.avatar_url || "");
+          setFaculty(pData.faculty || "");
+          setYearOfStudy(String(pData.year_of_study || 1));
+          setInterests((pData.interests || []).join(", "));
+          setPhone(pData.phone || "");
         }
         if (postsRes.data) {
           setAuthorPosts(postsRes.data);
@@ -89,17 +90,19 @@ const Profile = () => {
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
+    const updateData: any = { 
+      full_name: fullName, 
+      avatar_url: avatarUrl, 
+      faculty,
+      year_of_study: yearOfStudy ? parseInt(yearOfStudy) : null,
+      interests: interests.split(",").map(i => i.trim()).filter(i => i),
+      phone,
+      updated_at: new Date().toISOString() 
+    };
+
     const { error } = await supabase
       .from("profiles")
-      .update({ 
-        full_name: fullName, 
-        avatar_url: avatarUrl, 
-        faculty,
-        year_of_study: parseInt(yearOfStudy),
-        interests: interests.split(",").map(i => i.trim()).filter(i => i),
-        phone,
-        updated_at: new Date().toISOString() 
-      })
+      .update(updateData)
       .eq("id", user.id);
 
     if (error) {

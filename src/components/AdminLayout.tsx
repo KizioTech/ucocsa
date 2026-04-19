@@ -1,7 +1,28 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const trackView = async () => {
+      try {
+        await supabase.from("page_views").insert({
+          path: location.pathname,
+          user_id: user?.id || null,
+        });
+      } catch (err) {
+        // Silently fail for analytics
+      }
+    };
+    trackView();
+  }, [location.pathname, user?.id]);
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">

@@ -16,6 +16,7 @@ const AdminGallery = () => {
   const [newAlbum, setNewAlbum] = useState({ title: "", description: "" });
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const { data: albums, isLoading } = useQuery({
     queryKey: ["admin-gallery-albums"],
@@ -115,10 +116,10 @@ const AdminGallery = () => {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {pendingPhotos?.map((photo) => (
-                  <div key={photo.id} className="relative rounded-lg overflow-hidden border border-border">
-                    <img src={photo.image_url} alt={photo.caption || "Pending"} className="aspect-square object-cover w-full" />
+                  <div key={photo.id} className="relative rounded-lg overflow-hidden border border-border group cursor-pointer" onClick={() => setLightboxUrl(photo.image_url)}>
+                    <img src={photo.image_url} alt={photo.caption || "Pending"} className="aspect-square object-cover w-full group-hover:scale-105 transition-transform duration-300" />
                     {photo.caption && <p className="text-xs p-2 truncate text-muted-foreground">{photo.caption}</p>}
-                    <div className="flex">
+                    <div className="flex" onClick={(e) => e.stopPropagation()}>
                       <button onClick={() => approvePhoto(photo.id)} className="flex-1 py-2 bg-primary text-primary-foreground text-xs flex items-center justify-center gap-1 hover:bg-primary/90">
                         <Check size={14} /> Approve
                       </button>
@@ -179,6 +180,39 @@ const AdminGallery = () => {
           )}
         </div>
       </div>
+
+      {/* Lightbox */}
+      {lightboxUrl && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setLightboxUrl(null)}>
+          <button className="absolute top-4 right-4 text-white hover:text-gray-300" onClick={() => setLightboxUrl(null)}>
+            <X size={32} />
+          </button>
+          <img src={lightboxUrl} alt="Full view" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+          
+          {pendingPhotos?.find(p => p.image_url === lightboxUrl) && (
+            <div className="absolute bottom-6 flex gap-4" onClick={(e) => e.stopPropagation()}>
+              <button 
+                onClick={() => {
+                  const photo = pendingPhotos.find(p => p.image_url === lightboxUrl);
+                  if (photo) { approvePhoto(photo.id); setLightboxUrl(null); }
+                }} 
+                className="px-6 py-3 bg-primary text-primary-foreground rounded-full font-medium flex items-center gap-2 hover:bg-primary/90 shadow-lg"
+              >
+                <Check size={18} /> Approve
+              </button>
+              <button 
+                onClick={() => {
+                  const photo = pendingPhotos.find(p => p.image_url === lightboxUrl);
+                  if (photo) { rejectPhoto(photo.id); setLightboxUrl(null); }
+                }} 
+                className="px-6 py-3 bg-destructive text-destructive-foreground rounded-full font-medium flex items-center gap-2 hover:bg-destructive/90 shadow-lg"
+              >
+                <X size={18} /> Reject
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </AdminLayout>
   );
 };

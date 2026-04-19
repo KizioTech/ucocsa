@@ -130,24 +130,13 @@ const Messages = () => {
   const startNewConversation = async () => {
     if (!searchEmail.trim() || !user) return;
 
-    // Look up profile by email from auth (we search profiles)
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, full_name")
-      .neq("id", user.id);
+    // Look up profile securely via RPC
+    const { data: match, error: searchError } = await supabase
+      .rpc('search_users', { search_term: searchEmail })
+      .limit(1)
+      .maybeSingle();
 
-    // Since we can't query auth.users, we create a DM and let user specify by looking up profiles
-    if (!profiles?.length) {
-      toast({ title: "No users found", variant: "destructive" });
-      return;
-    }
-
-    // Find matching profile by name
-    const match = profiles.find(
-      (p) => p.full_name?.toLowerCase().includes(searchEmail.toLowerCase())
-    );
-
-    if (!match) {
+    if (!match || searchError) {
       toast({ title: "User not found", description: "Try searching by name.", variant: "destructive" });
       return;
     }

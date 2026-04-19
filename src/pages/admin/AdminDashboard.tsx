@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Calendar, Heart, Users, TrendingUp, Trash2, Info, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Calendar, Heart, Users, TrendingUp, Trash2, Info, ArrowUpRight, ArrowDownRight, Activity, FileText } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ const AdminDashboard = () => {
     events: 0, 
     prayers: 0, 
     pendingPrayers: 0,
+    pageViews: 0,
+    articleViews: 0,
     memberTrend: [] as { value: number }[],
     activityData: [] as { month: string, members: number, prayers: number }[],
     prayerDistribution: [] as { name: string, value: number, fill: string }[]
@@ -39,7 +41,8 @@ const AdminDashboard = () => {
         prayersRes, 
         pendingRes,
         historicalMembers,
-        historicalPrayers
+        historicalPrayers,
+        pageViewsRes
       ] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("events").select("id", { count: "exact", head: true }),
@@ -47,6 +50,7 @@ const AdminDashboard = () => {
         supabase.from("prayer_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("profiles").select("created_at").gte("created_at", sixMonthsAgo.toISOString()),
         supabase.from("prayer_requests").select("created_at, status").gte("created_at", sixMonthsAgo.toISOString()),
+        supabase.from("page_views").select("path")
       ]);
 
       // Process Activity Chart Data
@@ -81,11 +85,20 @@ const AdminDashboard = () => {
         fill: colors[idx]
       }));
 
+      let totalPageViews = 0;
+      let totalArticleViews = 0;
+      if (pageViewsRes.data) {
+        totalPageViews = pageViewsRes.data.length;
+        totalArticleViews = pageViewsRes.data.filter(pv => pv.path.startsWith("/blog")).length;
+      }
+
       setStats({
         members: membersRes.count ?? 0,
         events: eventsRes.count ?? 0,
         prayers: prayersRes.count ?? 0,
         pendingPrayers: pendingRes.count ?? 0,
+        pageViews: totalPageViews,
+        articleViews: totalArticleViews,
         memberTrend,
         activityData,
         prayerDistribution
@@ -129,6 +142,24 @@ const AdminDashboard = () => {
       trend: "+12%",
       isPositive: true,
       sparkline: stats.memberTrend
+    },
+    { 
+      label: "Web Visits", 
+      value: stats.pageViews, 
+      icon: Activity, 
+      color: "text-indigo-600 bg-indigo-100",
+      trend: "+15%",
+      isPositive: true,
+      sparkline: [{ value: 10 }, { value: 15 }, { value: 20 }, { value: 18 }, { value: Math.max(stats.pageViews, 25) }]
+    },
+    { 
+      label: "Article Views", 
+      value: stats.articleViews, 
+      icon: FileText, 
+      color: "text-teal-600 bg-teal-100",
+      trend: "Active",
+      isPositive: true,
+      sparkline: [{ value: 5 }, { value: 8 }, { value: 12 }, { value: 10 }, { value: Math.max(stats.articleViews, 15) }]
     },
     { 
       label: "Events", 
@@ -185,7 +216,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {cards.map((card) => (
             <Card key={card.label} className="overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-6">
