@@ -1,4 +1,4 @@
-import { useState, memo } from "react";
+import { useState, memo, Fragment } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -187,7 +187,18 @@ const AdminHymns = () => {
 
   const saveMut = useMutation({
     mutationFn: async (h: Partial<Hymn>) => {
+      let nextId = h.id;
+      if (isNew) {
+        const { data: maxIdData } = await (supabase as any)
+          .from("hymns")
+          .select("id")
+          .order("id", { ascending: false })
+          .limit(1);
+        nextId = maxIdData?.[0]?.id ? maxIdData[0].id + 1 : 1;
+      }
+
       const payload = {
+        ...(isNew ? { id: nextId } : {}),
         title: h.title || "",
         author: h.author || null,
         category: h.category || null,
@@ -326,8 +337,8 @@ const AdminHymns = () => {
                   </tr>
                 ) : (
                   filtered.map(hymn => (
-                    <>
-                      <tr key={hymn.id} className="hover:bg-muted/30 transition-colors">
+                    <Fragment key={hymn.id}>
+                      <tr className="hover:bg-muted/30 transition-colors">
                         <td className="px-4 py-3 font-mono text-primary font-semibold">{hymn.id}</td>
                         <td className="px-4 py-3">
                           <button
@@ -372,7 +383,7 @@ const AdminHymns = () => {
                         </td>
                       </tr>
                       {expandedId === hymn.id && (
-                        <tr key={`${hymn.id}-exp`} className="bg-muted/20">
+                        <tr className="bg-muted/20">
                           <td colSpan={6} className="px-6 py-4">
                             <div className="space-y-3 max-w-2xl">
                               {hymn.verses.map((v, i) => (
@@ -386,7 +397,7 @@ const AdminHymns = () => {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   ))
                 )}
               </tbody>

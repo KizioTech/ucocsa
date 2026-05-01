@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import SEO from "@/components/SEO";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { InstallHymnsButton, InstallHymnsPopup } from "@/components/InstallHymnsPrompt";
 import SharePoster from "@/components/SharePoster";
 import { 
@@ -477,7 +477,17 @@ const Hymns: React.FC = () => {
         .split(/\n\s*\n+/)
         .map((v) => v.trim())
         .filter(Boolean);
+
+      // Fetch the next ID since the database doesn't auto-increment it
+      const { data: maxIdData } = await (supabase as any)
+        .from("hymns")
+        .select("id")
+        .order("id", { ascending: false })
+        .limit(1);
+      const nextId = maxIdData?.[0]?.id ? maxIdData[0].id + 1 : 1;
+
       const { error } = await (supabase as any).from("hymns").insert({
+        id: nextId,
         title: suggestForm.title.trim(),
         author: suggestForm.author.trim() || null,
         category: suggestForm.category.trim() || null,
@@ -846,6 +856,9 @@ const Hymns: React.FC = () => {
             <DialogTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5 text-primary" /> Suggest a New Hymn
             </DialogTitle>
+            <DialogDescription className="hidden">
+              Form to suggest a new hymn for the library.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">
