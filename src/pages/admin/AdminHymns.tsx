@@ -1,4 +1,4 @@
-import { useState, memo, Fragment } from "react";
+import { useState, memo, Fragment, useRef } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -39,6 +39,8 @@ interface HymnFormProps {
 }
 
 const HymnForm = memo(({ isNew, editHymn, setEditHymn, onClose, onSave, saving }: HymnFormProps) => {
+  const verseRefs = useRef<(HTMLTextAreaElement | null)[]>([]);
+
   const updateVerse = (idx: number, val: string) => {
     setEditHymn(prev => {
       if (!prev) return prev;
@@ -47,6 +49,24 @@ const HymnForm = memo(({ isNew, editHymn, setEditHymn, onClose, onSave, saving }
       return { ...prev, verses };
     });
   };
+
+  const insertChorusBreak = (idx: number) => {
+    const el = verseRefs.current[idx];
+    if (!el) return;
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? start;
+    const before = el.value.slice(0, start);
+    const after = el.value.slice(end);
+    const separator = "\n \n";
+    const newVal = before + separator + after;
+    updateVerse(idx, newVal);
+    // Restore cursor after separator
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(start + separator.length, start + separator.length);
+    }, 0);
+  };
+
   const addVerse = () => setEditHymn(prev => prev ? { ...prev, verses: [...(prev.verses || []), ""] } : prev);
   const removeVerse = (idx: number) => setEditHymn(prev =>
     prev ? { ...prev, verses: (prev.verses || []).filter((_, i) => i !== idx) } : prev
@@ -125,13 +145,30 @@ const HymnForm = memo(({ isNew, editHymn, setEditHymn, onClose, onSave, saving }
                 <div key={idx} className="relative">
                   <div className="flex items-start gap-2">
                     <span className="text-xs font-semibold text-muted-foreground pt-2.5 w-14 shrink-0">Verse {idx + 1}</span>
-                    <textarea
-                      value={verse}
-                      onChange={e => updateVerse(idx, e.target.value)}
-                      rows={4}
-                      placeholder={`Type verse ${idx + 1} lyrics here. Use a blank line to separate the chorus.`}
-                      className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none font-mono leading-relaxed"
-                    />
+                    <div className="flex-1 space-y-1">
+                      <textarea
+                        ref={el => { verseRefs.current[idx] = el; }}
+                        value={verse}
+                        onChange={e => updateVerse(idx, e.target.value)}
+                        rows={4}
+                        placeholder={`Type verse ${idx + 1} lyrics here. Use "Insert Chorus Break" to separate the chorus.`}
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none font-mono leading-relaxed"
+                      />
+                      <div className="flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => insertChorusBreak(idx)}
+                          className="text-[11px] px-2 py-0.5 rounded border border-primary/40 text-primary hover:bg-primary/10 transition-colors font-medium"
+                        >
+                          ↵ Insert Chorus Break
+                        </button>
+                        {verse.length > 400 && (
+                          <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                            ⚠ Long verse ({verse.length} chars) — consider splitting
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     {(editHymn.verses || []).length > 1 && (
                       <button onClick={() => removeVerse(idx)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors mt-1">
                         <X size={14} />
@@ -141,7 +178,7 @@ const HymnForm = memo(({ isNew, editHymn, setEditHymn, onClose, onSave, saving }
                 </div>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Tip: Separate a chorus from the verse with a blank line. Each verse becomes its own card on the public page.</p>
+            <p className="text-xs text-muted-foreground mt-1">Tip: Place the cursor in a verse and click <strong>Insert Chorus Break</strong> to split verse / chorus. Each verse becomes its own card on the public page.</p>
           </div>
 
           <div>
@@ -386,12 +423,22 @@ const AdminHymns = () => {
                         <tr className="bg-muted/20">
                           <td colSpan={6} className="px-6 py-4">
                             <div className="space-y-3 max-w-2xl">
-                              {hymn.verses.map((v, i) => (
-                                <div key={i}>
-                                  <div className="text-xs font-semibold text-primary mb-1">Verse {i + 1}</div>
-                                  <p className="text-sm whitespace-pre-line text-muted-foreground">{v}</p>
-                                </div>
-                              ))}
+                              {hymn.verses.map((v, i) => {
+                                const parts = v.split(/\n \n/);
+                                return (
+                                  <div key={i}>
+                                    <div className="text-xs font-semibold text-primary mb-1">Verse {i + 1}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                      <p className="whitespace-pre-line">{parts[0]}</p>
+                                      {parts.length > 1 && (
+                                        <p className="mt-2 pl-3 border-l-2 border-primary italic text-primary/80 whitespace-pre-line text-xs">
+                                          {parts.slice(1).join("\n \n")}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                               {hymn.bio && <p className="text-xs text-muted-foreground border-t border-border pt-3 mt-3 italic">{hymn.bio}</p>}
                             </div>
                           </td>

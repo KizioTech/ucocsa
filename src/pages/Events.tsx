@@ -55,6 +55,17 @@ const Events = () => {
     },
   });
 
+  const { data: siteSettings } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("*").maybeSingle();
+      return data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const isSchoolOpen = siteSettings?.is_open !== false;
+
   const allEvents = useMemo(() => {
     const regular = (dbEvents ?? []).map((e) => ({
       id: e.id,
@@ -68,20 +79,23 @@ const Events = () => {
       program: null as any,
     }));
 
-    const fixed = (programs ?? []).map((p: any) => ({
-      id: `program-${p.id}`,
-      title: p.title || (p.service_type === "sunday" ? "Sunday Gathering" : "MidWeek Fellowship"),
-      description: p.theme ? `Theme: ${p.theme}` : (p.leading_verses ? `Scripture: ${p.leading_verses}` : null),
-      event_date: p.service_date,
-      event_time: p.service_type === "sunday" ? "08:00" : "18:00",
-      location: p.location || (p.service_type === "sunday" ? "Lecture Theater 2" : null),
-      event_type: p.service_type === "sunday" ? "Sunday Service" : "MidWeek Service",
-      is_fixed: true,
-      program: p,
-    }));
+    // Hide fixed service programs during semester break
+    const fixed = isSchoolOpen
+      ? (programs ?? []).map((p: any) => ({
+          id: `program-${p.id}`,
+          title: p.title || (p.service_type === "sunday" ? "Sunday Gathering" : "MidWeek Fellowship"),
+          description: p.theme ? `Theme: ${p.theme}` : (p.leading_verses ? `Scripture: ${p.leading_verses}` : null),
+          event_date: p.service_date,
+          event_time: p.service_type === "sunday" ? "08:00" : "18:00",
+          location: p.location || (p.service_type === "sunday" ? "Lecture Theater 2" : null),
+          event_type: p.service_type === "sunday" ? "Sunday Service" : "MidWeek Service",
+          is_fixed: true,
+          program: p,
+        }))
+      : [];
 
     return [...regular, ...fixed].sort((a, b) => a.event_date.localeCompare(b.event_date));
-  }, [dbEvents, programs]);
+  }, [dbEvents, programs, isSchoolOpen]);
 
   const filtered = filter === "All" ? allEvents : allEvents.filter((e) => e.event_type === filter);
   const loading = eventsLoading || programsLoading;
@@ -158,6 +172,21 @@ const Events = () => {
 
       <section className="py-16">
         <div className="container">
+          {/* Semester Break Notice */}
+          {!isSchoolOpen && (
+            <div className="mb-8 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-5 py-4 max-w-2xl mx-auto">
+              <span className="text-xl mt-0.5">🎓</span>
+              <div>
+                <p className="font-semibold text-amber-800 dark:text-amber-300">UCOCSA is on semester break</p>
+                <p className="text-sm text-amber-700/80 dark:text-amber-400/80 mt-0.5">
+                  {siteSettings?.closure_msg || "Regular weekly services are paused. We'll be back soon!"}
+                  {siteSettings?.opens_at && (
+                    <> Resuming on <strong>{new Date(siteSettings.opens_at).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</strong>.</>
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
           <div className="flex flex-wrap gap-2 mb-10 justify-center">
             {types.map((t) => (
               <button key={t} onClick={() => setFilter(t)}

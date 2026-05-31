@@ -57,6 +57,9 @@
 
     --font-heading: 'DM Serif Display', serif;
     --font-body: 'DM Sans', sans-serif;
+
+    --color-border-warning: #f59e0b;
+    --color-border-success: #10b981;
   }
 
   .dark {
@@ -87,6 +90,9 @@
     --sidebar-accent-foreground: 40 30% 95%;
     --sidebar-border: 153 25% 18%;
     --sidebar-ring: 40 55% 55%;
+
+    --color-border-warning: #d97706;
+    --color-border-success: #059669;
   }
 }
 
