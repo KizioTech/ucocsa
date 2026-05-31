@@ -32,7 +32,7 @@ const Events = () => {
   const { data: siteSettings } = useQuery({
     queryKey: ["site-settings"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("*").maybeSingle();
+      const { data } = await supabase.from("site_settings").select("*").limit(1).maybeSingle();
       return data;
     },
     staleTime: 1000 * 60 * 5,

@@ -34,6 +34,7 @@ const AdminDashboard = () => {
   const [savingStatus, setSavingStatus] = useState(false);
 
   const [statusForm, setStatusForm] = useState({
+    id: "",
     is_open: true,
     opens_at: "",
     closure_msg: "",
@@ -63,11 +64,12 @@ const AdminDashboard = () => {
         supabase.from("profiles").select("created_at").gte("created_at", sixMonthsAgo.toISOString()),
         supabase.from("prayer_requests").select("created_at, status").gte("created_at", sixMonthsAgo.toISOString()),
         supabase.from("page_views").select("path"),
-        supabase.from("site_settings").select("*").maybeSingle()
+        supabase.from("site_settings").select("*").limit(1).maybeSingle()
       ]);
 
       if (settingsRes.data) {
         setStatusForm({
+          id: settingsRes.data.id,
           is_open: settingsRes.data.is_open ?? true,
           opens_at: settingsRes.data.opens_at || "",
           closure_msg: settingsRes.data.closure_msg || "",
@@ -158,17 +160,25 @@ const AdminDashboard = () => {
   const handleSaveStatus = async () => {
     setSavingStatus(true);
     try {
-      const { error } = await supabase
-        .from("site_settings")
-        .upsert({
-          id: "00000000-0000-0000-0000-000000000000",
-          is_open: statusForm.is_open,
-          opens_at: statusForm.opens_at || null,
-          closure_msg: statusForm.closure_msg || null,
-          timezone: statusForm.timezone
-        });
+      const payload = {
+        is_open: statusForm.is_open,
+        opens_at: statusForm.opens_at || null,
+        closure_msg: statusForm.closure_msg || null,
+        timezone: statusForm.timezone
+      };
+      
+      let error;
+      if (statusForm.id) {
+        const res = await supabase.from("site_settings").update(payload).eq("id", statusForm.id);
+        error = res.error;
+      } else {
+        const res = await supabase.from("site_settings").insert([payload]);
+        error = res.error;
+      }
+      
       if (error) throw error;
       toast.success("School status updated successfully");
+      fetchStats(); // refresh to get ID if we just inserted
     } catch (err: any) {
       toast.error(err.message || "Failed to update school status");
     } finally {

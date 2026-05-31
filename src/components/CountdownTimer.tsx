@@ -37,11 +37,15 @@ interface CountdownTimerProps {
 }
 
 const CountdownTimer = ({ isOpen = true, opensAt = null }: CountdownTimerProps) => {
-  // When closed and a reopening date is set, count down to that; otherwise next service
+  // When closed and a reopening date is set, count down to that.
+  // If closed and NO reopening date, return an already-expired target.
   const deriveTarget = useCallback(() => {
-    if (!isOpen && opensAt) {
-      const d = new Date(opensAt + "T08:00:00");
-      return { date: d, label: "Reopening" };
+    if (!isOpen) {
+      if (opensAt) {
+        const d = new Date(opensAt + "T08:00:00");
+        return { date: d, label: "Reopening" };
+      }
+      return { date: new Date(0), label: "Closed" };
     }
     return getNextService();
   }, [isOpen, opensAt]);

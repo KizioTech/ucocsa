@@ -50,7 +50,7 @@ const Index = () => {
         supabase.from("gallery_albums").select("*, photos:gallery_photos(id, image_url, caption, is_approved)").eq("is_highlighted", true).eq("is_published", true),
         supabase.from("gallery_photos").select("id, image_url, caption, is_approved, album:gallery_albums(title)").eq("is_approved", true).order("created_at", { ascending: false }).limit(6),
         supabase.from("service_programs").select("*").eq("is_published", true).gte("service_date", today).order("service_date", { ascending: true }).limit(2),
-        supabase.from("site_settings").select("*").maybeSingle()
+        supabase.from("site_settings").select("*").limit(1).maybeSingle()
       ]);
 
       return {
