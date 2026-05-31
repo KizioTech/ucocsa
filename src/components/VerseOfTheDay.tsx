@@ -35,20 +35,15 @@ const VerseOfTheDay = () => {
     ? `${verse.bookname} ${verse.chapter}:${verse.verse}`
     : "";
 
-  const cleanText = (html: string) => {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || "";
-  };
-
   const handleCopy = () => {
     if (!verse) return;
-    navigator.clipboard.writeText(`"${cleanText(verse.text)}" — ${reference} (NET)`);
+    navigator.clipboard.writeText(`"${verse.text}" — ${reference} (NET)`);
     toast.success("Verse copied!");
   };
 
   const handleShare = () => {
     if (!verse) return;
-    const text = `"${cleanText(verse.text)}" — ${reference}\n\nucocsa.vercel.app`;
+    const text = `"${verse.text}" — ${reference}\n\nucocsa.vercel.app`;
     if (navigator.share) {
       navigator.share({ title: "Verse of the Day", text }).catch(() => {});
     } else {
@@ -89,7 +84,7 @@ const VerseOfTheDay = () => {
           ) : verse ? (
             <>
               <blockquote className="pl-5 border-l-4 border-primary font-serif text-lg md:text-xl leading-relaxed text-foreground italic mb-4">
-                "<span dangerouslySetInnerHTML={{ __html: verse.text }} />"
+                "{verse.text}"
               </blockquote>
               <p className="pl-5 text-sm font-medium text-primary mb-5">
                 — {reference}

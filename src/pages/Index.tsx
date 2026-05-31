@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, HandHeart, BookOpen, Users, Music, ArrowRight, Image, Church, Megaphone, CalendarDays, Clock, MapPin, AlertTriangle } from "lucide-react";
+import { Calendar, HandHeart, BookOpen, Users, Music, ArrowRight, Image, Church, Megaphone, CalendarDays, Clock, MapPin } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import CountdownTimer from "@/components/CountdownTimer";
@@ -41,16 +41,14 @@ const Index = () => {
         blogRes,
         albumsRes,
         recentPhotosRes,
-        programsRes,
-        settingsRes
+        programsRes
       ] = await Promise.all([
         supabase.from("events").select("*").gte("event_date", today).order("event_date", { ascending: true }).limit(3),
         supabase.from("announcements").select("*").eq("is_published", true).order("created_at", { ascending: false }).limit(1),
         supabase.from("blog_posts").select("*").eq("is_published", true).order("published_at", { ascending: false }).limit(3),
         supabase.from("gallery_albums").select("*, photos:gallery_photos(id, image_url, caption, is_approved)").eq("is_highlighted", true).eq("is_published", true),
         supabase.from("gallery_photos").select("id, image_url, caption, is_approved, album:gallery_albums(title)").eq("is_approved", true).order("created_at", { ascending: false }).limit(6),
-        supabase.from("service_programs").select("*").eq("is_published", true).gte("service_date", today).order("service_date", { ascending: true }).limit(2),
-        supabase.from("site_settings").select("*").maybeSingle()
+        supabase.from("service_programs").select("*").eq("is_published", true).gte("service_date", today).order("service_date", { ascending: true }).limit(2)
       ]);
 
       return {
@@ -62,8 +60,7 @@ const Index = () => {
           gallery_photos: (album.photos as any[])?.filter((p: any) => p.is_approved !== false) || []
         })) || [],
         recentPhotos: recentPhotosRes.data || [],
-        upcomingPrograms: programsRes.data || [],
-        settings: settingsRes.data || null
+        upcomingPrograms: programsRes.data || []
       };
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
@@ -75,8 +72,7 @@ const Index = () => {
     blogPosts = [],
     highlightedAlbums = [],
     recentPhotos = [],
-    upcomingPrograms = [],
-    settings = null
+    upcomingPrograms = []
   } = homeData || {};
 
   let highlightPhotos = highlightedAlbums.flatMap(
@@ -130,10 +126,10 @@ const Index = () => {
               </Link>
             </div>
 
-            <CountdownTimer isOpen={settings?.is_open ?? true} opensAt={settings?.opens_at ?? null} />
+            <CountdownTimer />
 
-            {/* Upcoming Service Program Summary — hidden during semester break */}
-            {(settings?.is_open !== false) && upcomingPrograms.length > 0 && (
+            {/* Upcoming Service Program Summary */}
+            {upcomingPrograms.length > 0 && (
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
                 {upcomingPrograms.map((prog) => (
                   <Link key={prog.id} to="/events" className="bg-cream/10 backdrop-blur border border-cream/20 rounded-xl px-5 py-3 text-left max-w-xs hover:bg-cream/20 transition-colors">
@@ -158,27 +154,15 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Semester Break Closure Banner */}
-      {settings?.is_open === false ? (
-        <div className="bg-amber-500/10 border-y border-amber-500/30">
-          <div className="container py-3 text-center text-sm font-medium text-amber-800 dark:text-amber-300">
-            <AlertTriangle size={14} className="inline mr-1.5 text-amber-600 dark:text-amber-400" />
-            {settings.closure_msg ||
-              `🎓 UCOCSA is on semester break.${
-                settings.opens_at
-                  ? ` We resume on ${new Date(settings.opens_at).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}.`
-                  : ""
-              } See you then!`}
-          </div>
-        </div>
-      ) : latestAnnouncement ? (
+      {/* Dynamic Announcement Banner */}
+      {latestAnnouncement && (
         <div className="bg-primary/10 border-y border-primary/20">
           <div className="container py-3 text-center text-sm font-medium text-foreground">
             <Megaphone size={14} className="inline mr-1 text-primary" /> <span className="text-primary font-semibold">{latestAnnouncement.title}:</span> {latestAnnouncement.content.slice(0, 120)}
             {latestAnnouncement.content.length > 120 && "…"}
           </div>
         </div>
-      ) : null}
+      )}
 
       {/* Verse of the Day */}
       <VerseOfTheDay />

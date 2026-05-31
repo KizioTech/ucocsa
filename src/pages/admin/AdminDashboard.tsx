@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Calendar, Heart, Users, TrendingUp, Trash2, Info, ArrowUpRight, ArrowDownRight, Activity, FileText, AlertTriangle } from "lucide-react";
+import { Calendar, Heart, Users, TrendingUp, Trash2, Info, ArrowUpRight, ArrowDownRight, Activity, FileText } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,8 @@ import {
   DistributionDonutChart 
 } from "@/components/admin/DashboardCharts";
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQueryClient } from "@tanstack/react-query";
 
 const AdminDashboard = () => {
-  const queryClient = useQueryClient();
   const [stats, setStats] = useState({ 
     members: 0, 
     events: 0, 
@@ -32,60 +26,8 @@ const AdminDashboard = () => {
     activityData: [] as { month: string, members: number, prayers: number }[],
     prayerDistribution: [] as { name: string, value: number, fill: string }[]
   });
-  const [statusForm, setStatusForm] = useState({
-    is_open: true,
-    opens_at: "",
-    closure_msg: "",
-    timezone: "Africa/Blantyre"
-  });
   const [cleaning, setCleaning] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  const fetchSettings = async () => {
-    try {
-      const { data, error } = await supabase.from("site_settings").select("*").maybeSingle();
-      if (error) throw error;
-      if (data) {
-        setStatusForm({
-          is_open: data.is_open,
-          opens_at: data.opens_at || "",
-          closure_msg: data.closure_msg || "",
-          timezone: data.timezone || "Africa/Blantyre"
-        });
-      }
-    } catch (err) {
-      console.error("Error fetching site settings:", err);
-    }
-  };
-
-  const handleSaveSettings = async () => {
-    try {
-      const { data: existing } = await supabase.from("site_settings").select("id").maybeSingle();
-      const payload = {
-        is_open: statusForm.is_open,
-        opens_at: statusForm.opens_at || null,
-        closure_msg: statusForm.closure_msg || null,
-        timezone: statusForm.timezone,
-        updated_at: new Date().toISOString()
-      };
-      
-      let error;
-      if (existing) {
-        const res = await supabase.from("site_settings").update(payload).eq("id", existing.id);
-        error = res.error;
-      } else {
-        const res = await supabase.from("site_settings").insert(payload);
-        error = res.error;
-      }
-      
-      if (error) throw error;
-      toast.success("Site status updated successfully");
-      fetchSettings();
-      queryClient.invalidateQueries({ queryKey: ["site_settings"] });
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update site status");
-    }
-  };
 
   const fetchStats = async () => {
     setLoading(true);
@@ -171,19 +113,18 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchStats();
-    fetchSettings();
   }, []);
 
   const handleManualCleanup = async () => {
     setCleaning(true);
     try {
       const today = new Date().toISOString().split("T")[0];
-      const { data: deletedEvents, error: eventError } = await supabase.from("events").delete().lt("event_date", today).select("id");
-      const { data: deletedPrograms, error: programError } = await supabase.from("service_programs").delete().lt("service_date", today).select("id");
+      const { error: eventError } = await supabase.from("events").delete().lt("event_date", today);
+      const { error: programError } = await supabase.from("service_programs").delete().lt("service_date", today);
       const { error: annError } = await supabase.from("announcements").delete().lt("expires_at", today);
 
       if (eventError || programError || annError) throw new Error("Cleanup failed");
-      toast.success(`Cleanup complete: ${deletedEvents?.length || 0} events and ${deletedPrograms?.length || 0} programs removed.`);
+      toast.success("Cleanup completed");
       fetchStats();
     } catch (err: any) {
       toast.error(err.message);
@@ -254,15 +195,7 @@ const AdminDashboard = () => {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-heading text-foreground flex items-center gap-2">
-              Dashboard
-              {statusForm.is_open && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-500/10 text-green-600 border border-green-500/20">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Active
-                </span>
-              )}
-            </h1>
+            <h1 className="text-3xl font-heading text-foreground">Dashboard</h1>
             <p className="text-muted-foreground text-sm">Welcome back! Here's what's happening in UCOCSA.</p>
           </div>
           
@@ -281,96 +214,6 @@ const AdminDashboard = () => {
             </Button>
           </div>
         </div>
-
-        {/* Warning Banner when School is Closed */}
-        {!statusForm.is_open && (
-          <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive">
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-            <AlertTitle className="font-bold">School is Closed</AlertTitle>
-            <AlertDescription className="text-xs">
-              ⚠ School is currently closed. Site is showing closure mode to visitors. Next opening: {statusForm.opens_at ? format(new Date(statusForm.opens_at + "T00:00:00"), "MMMM d, yyyy") : "TBA"}. Edit in Site Status.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* School Status Settings Card */}
-        <Card 
-          className="transition-all duration-300 shadow-sm"
-          style={{
-            border: statusForm.is_open 
-              ? "2px solid var(--color-border-success)" 
-              : "2px solid var(--color-border-warning)"
-          }}
-        >
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Activity size={18} className={statusForm.is_open ? "text-green-600" : "text-amber-600"} />
-              School Status Settings
-            </CardTitle>
-            <CardDescription>
-              Configure whether UCOCSA is currently active or on semester break.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 bg-muted/40 rounded-xl">
-              <div className="space-y-0.5">
-                <Label className="text-base font-semibold">Academic Session Status</Label>
-                <p className="text-xs text-muted-foreground">
-                  Toggle to "Closed" during semester breaks to update the public homepage.
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className={`text-sm font-bold ${statusForm.is_open ? "text-green-600" : "text-amber-600"}`}>
-                  {statusForm.is_open ? "Open (Active)" : "Closed (On Break)"}
-                </span>
-                <Switch 
-                  checked={statusForm.is_open} 
-                  onCheckedChange={(checked) => setStatusForm(prev => ({ ...prev, is_open: checked }))} 
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <Label>Next Semester Opens</Label>
-                <Input 
-                  type="date" 
-                  value={statusForm.opens_at} 
-                  onChange={(e) => setStatusForm(prev => ({ ...prev, opens_at: e.target.value }))}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Church Timezone</Label>
-                <Select 
-                  value={statusForm.timezone} 
-                  onValueChange={(val) => setStatusForm(prev => ({ ...prev, timezone: val }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Timezone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Africa/Blantyre">Africa/Blantyre (CAT - UTC+2)</SelectItem>
-                    <SelectItem value="UTC">UTC (GMT)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Custom Closure Message</Label>
-                <Input 
-                  placeholder="e.g. Wishing you a blessed holiday!" 
-                  value={statusForm.closure_msg} 
-                  onChange={(e) => setStatusForm(prev => ({ ...prev, closure_msg: e.target.value }))}
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <Button onClick={handleSaveSettings}>Save Status Settings</Button>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

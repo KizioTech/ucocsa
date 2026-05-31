@@ -137,14 +137,7 @@ const AdminPrograms = () => {
       setEditing(null);
       setForm(emptyForm);
     },
-    onError: (e: any) => {
-      // PostgreSQL unique_violation = a program for this date/type already exists
-      if (e?.code === "23505" || e?.message?.toLowerCase().includes("unique")) {
-        toast.error("A program for this service date already exists. Edit the existing one instead.");
-      } else {
-        toast.error(e.message);
-      }
-    },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const deleteMutation = useMutation({

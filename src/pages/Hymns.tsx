@@ -370,11 +370,7 @@ const Hymns: React.FC = () => {
   const toggleFavorite = useCallback((id: number) => {
     setFavorites(prev => {
       const n = new Set(prev);
-      if (n.has(id)) {
-        n.delete(id);
-      } else {
-        n.add(id);
-      }
+      n.has(id) ? n.delete(id) : n.add(id);
       return n;
     });
   }, []);
@@ -481,11 +477,6 @@ const Hymns: React.FC = () => {
         .split(/\n\s*\n+/)
         .map((v) => v.trim())
         .filter(Boolean);
-
-      // Warn in console if user used wrong separators but don't block
-      if (suggestForm.verses.includes("---") || suggestForm.verses.includes("===")) {
-        console.warn("[HymnSuggest] Possible wrong separator used. Use blank lines only.");
-      }
 
       // Fetch the next ID since the database doesn't auto-increment it
       const { data: maxIdData } = await (supabase as any)
@@ -906,24 +897,8 @@ const Hymns: React.FC = () => {
               onChange={(e) => setSuggestForm({ ...suggestForm, verses: e.target.value })}
               placeholder="Lyrics — separate each verse with a blank line *"
               rows={8}
-              className={`w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-2 focus:ring-primary font-mono leading-relaxed resize-none ${
-                (suggestForm.verses.includes("---") || suggestForm.verses.includes("==="))
-                  ? "border-amber-400 focus:ring-amber-400"
-                  : "border-border"
-              }`}
+              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary font-mono leading-relaxed resize-none"
             />
-            {/* Formatting instructions */}
-            <div className="rounded-lg bg-muted/60 border border-border px-3 py-2 text-[11px] text-muted-foreground space-y-1">
-              <p className="font-semibold text-foreground/80">Formatting guide:</p>
-              <p>• Separate <strong>verses</strong> with a <strong>blank line</strong> (press Enter twice).</p>
-              <p>• Separate a <strong>chorus</strong> from its verse with: a newline, a space, then another newline — i.e. <code className="bg-background px-1 rounded text-primary">\n \n</code>.</p>
-              <p>• Do <strong>not</strong> use <code className="bg-background px-1 rounded text-primary">---</code> or <code className="bg-background px-1 rounded text-primary">===</code> as dividers.</p>
-            </div>
-            {(suggestForm.verses.includes("---") || suggestForm.verses.includes("===")) && (
-              <p className="text-amber-600 dark:text-amber-400 text-xs font-medium">
-                ⚠ It looks like you used <code>---</code> or <code>===</code> as a separator. Use a blank line between verses instead.
-              </p>
-            )}
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setSuggestOpen(false)}>Cancel</Button>
               <Button onClick={() => suggestMut.mutate()} disabled={suggestMut.isPending}>

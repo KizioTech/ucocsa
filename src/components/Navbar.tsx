@@ -14,8 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NotificationBell from "./NotificationBell";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 const standaloneLinks = [
   { to: "/", label: "Home" },
@@ -91,15 +89,6 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminCheck();
 
-  const { data: settings } = useQuery({
-    queryKey: ["site_settings"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("site_settings").select("*").maybeSingle();
-      if (error) throw error;
-      return data;
-    }
-  });
-
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container flex items-center justify-between h-16">
@@ -125,15 +114,6 @@ const Navbar = () => {
           ))}
           <NavDropdown label="Community" links={communityLinks} />
           <NavDropdown label="Grow" links={growLinks} />
-            
-            {/* Subtle Status Indicator */}
-            {settings && (
-              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-muted/30 ml-2">
-                <span className={`h-2 w-2 rounded-full ${settings.is_open ? "bg-green-500 animate-pulse" : "bg-red-500"}`} />
-                <span className="text-muted-foreground">{settings.is_open ? "In Session" : "Break"}</span>
-              </div>
-            )}
-
             <Link
               to="/hymns"
               className="ml-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-gold-dark transition-colors"

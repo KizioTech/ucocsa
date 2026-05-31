@@ -29,30 +29,9 @@ const getNextService = () => {
   return wed.date < sun.date ? wed : sun;
 };
 
-interface CountdownTimerProps {
-  /** Whether services are running (from site_settings.is_open) */
-  isOpen?: boolean;
-  /** The date the school re-opens (from site_settings.opens_at) — ISO date string or null */
-  opensAt?: string | null;
-}
-
-const CountdownTimer = ({ isOpen = true, opensAt = null }: CountdownTimerProps) => {
-  // When closed and a reopening date is set, count down to that; otherwise next service
-  const deriveTarget = useCallback(() => {
-    if (!isOpen && opensAt) {
-      const d = new Date(opensAt + "T08:00:00");
-      return { date: d, label: "Reopening" };
-    }
-    return getNextService();
-  }, [isOpen, opensAt]);
-
-  const [target, setTarget] = useState(deriveTarget);
+const CountdownTimer = () => {
+  const [target, setTarget] = useState(getNextService);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-  // Re-derive target whenever isOpen / opensAt changes
-  useEffect(() => {
-    setTarget(deriveTarget());
-  }, [deriveTarget]);
 
   const calculateTimeLeft = useCallback((targetDate: Date) => {
     const diff = Math.max(0, targetDate.getTime() - Date.now());
@@ -68,9 +47,9 @@ const CountdownTimer = ({ isOpen = true, opensAt = null }: CountdownTimerProps) 
   useEffect(() => {
     const tick = () => {
       const result = calculateTimeLeft(target.date);
-
-      if (result.isExpired && isOpen) {
-        // Only auto-advance to next service when school is open
+      
+      if (result.isExpired) {
+        // Target reached, find next service
         setTarget(getNextService());
       } else {
         setTimeLeft({
@@ -85,7 +64,7 @@ const CountdownTimer = ({ isOpen = true, opensAt = null }: CountdownTimerProps) 
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [target.date, calculateTimeLeft, isOpen]);
+  }, [target.date, calculateTimeLeft]);
 
   const units = [
     { label: "Days", value: timeLeft.days },
@@ -94,35 +73,16 @@ const CountdownTimer = ({ isOpen = true, opensAt = null }: CountdownTimerProps) 
     { label: "Secs", value: timeLeft.seconds },
   ];
 
-  const isClosed = !isOpen;
-
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="text-cream/80 text-xs font-medium uppercase tracking-wider">
-        {isClosed && opensAt ? "Break ends in" : `Next: ${target.label}`}
-      </p>
+      <p className="text-cream/80 text-xs font-medium uppercase tracking-wider">{target.label}</p>
       <div className="flex gap-3">
         {units.map((u) => (
-          <div
-            key={u.label}
-            className={`flex flex-col items-center backdrop-blur rounded-lg px-3 py-2 min-w-[60px] ${
-              isClosed ? "bg-amber-500/20" : "bg-secondary/80"
-            }`}
-          >
-            <span
-              className={`text-2xl font-bold font-heading ${
-                isClosed ? "text-amber-200" : "text-secondary-foreground"
-              }`}
-            >
+          <div key={u.label} className="flex flex-col items-center bg-secondary/80 backdrop-blur rounded-lg px-3 py-2 min-w-[60px]">
+            <span className="text-2xl font-bold text-secondary-foreground font-heading">
               {String(u.value).padStart(2, "0")}
             </span>
-            <span
-              className={`text-[10px] uppercase tracking-wider ${
-                isClosed ? "text-amber-300/60" : "text-secondary-foreground/60"
-              }`}
-            >
-              {u.label}
-            </span>
+            <span className="text-[10px] uppercase tracking-wider text-secondary-foreground/60">{u.label}</span>
           </div>
         ))}
       </div>
