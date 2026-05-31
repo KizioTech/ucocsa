@@ -29,6 +29,15 @@ const Events = () => {
   const { user } = useAuth();
   const types = ["All", "Fellowship", "Bible Study", "Outreach", "Special Service", "Social", "MidWeek Service", "Sunday Service", "Other"];
 
+  const { data: siteSettings } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("*").maybeSingle();
+      return data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
   const { data: dbEvents, isLoading: eventsLoading } = useQuery({
     queryKey: ["events-page"],
     queryFn: async () => {
@@ -68,7 +77,7 @@ const Events = () => {
       program: null as any,
     }));
 
-    const fixed = (programs ?? []).map((p: any) => ({
+    const fixed = siteSettings?.is_open !== false ? (programs ?? []).map((p: any) => ({
       id: `program-${p.id}`,
       title: p.title || (p.service_type === "sunday" ? "Sunday Gathering" : "MidWeek Fellowship"),
       description: p.theme ? `Theme: ${p.theme}` : (p.leading_verses ? `Scripture: ${p.leading_verses}` : null),
@@ -78,10 +87,10 @@ const Events = () => {
       event_type: p.service_type === "sunday" ? "Sunday Service" : "MidWeek Service",
       is_fixed: true,
       program: p,
-    }));
+    })) : [];
 
     return [...regular, ...fixed].sort((a, b) => a.event_date.localeCompare(b.event_date));
-  }, [dbEvents, programs]);
+  }, [dbEvents, programs, siteSettings?.is_open]);
 
   const filtered = filter === "All" ? allEvents : allEvents.filter((e) => e.event_type === filter);
   const loading = eventsLoading || programsLoading;
@@ -155,6 +164,27 @@ const Events = () => {
           </motion.div>
         </div>
       </section>
+
+      {siteSettings?.is_open === false && (
+        <section className="bg-amber-50 dark:bg-amber-950/20 py-4 border-y border-amber-200 dark:border-amber-900">
+          <div className="container">
+            <div className="max-w-3xl mx-auto flex items-start gap-3 p-4 rounded-xl bg-amber-100/50 dark:bg-amber-900/30">
+              <div className="p-2 bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full">
+                <CalIcon size={20} />
+              </div>
+              <div>
+                <p className="font-semibold text-amber-800 dark:text-amber-300">UCOCSA is on semester break</p>
+                <p className="text-sm text-amber-700/80 dark:text-amber-400/80 mt-0.5">
+                  {siteSettings?.closure_msg || "Regular weekly services are paused. We'll be back soon!"}
+                  {siteSettings?.opens_at && (
+                    <> Resuming on <strong>{new Date(siteSettings.opens_at).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</strong>.</>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="py-16">
         <div className="container">

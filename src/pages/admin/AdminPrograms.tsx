@@ -127,7 +127,12 @@ const AdminPrograms = () => {
         if (error) throw error;
       } else {
         const { error } = await supabase.from("service_programs").insert(payload);
-        if (error) throw error;
+        if (error) {
+          if (error.code === '23505') {
+            throw new Error(`A ${payload.service_type} program already exists for ${payload.service_date}.`);
+          }
+          throw error;
+        }
       }
     },
     onSuccess: () => {

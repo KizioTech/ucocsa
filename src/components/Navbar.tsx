@@ -4,6 +4,7 @@ import { Menu, X, LogIn, LogOut, ChevronDown, User, LayoutDashboard, Mail, Shiel
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { useQuery } from "@tanstack/react-query";
 import logo from "@/assets/ucocsa-logo.png";
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NotificationBell from "./NotificationBell";
+import { supabase } from "@/integrations/supabase/client";
 
 const standaloneLinks = [
   { to: "/", label: "Home" },
@@ -89,12 +91,30 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminCheck();
 
+  const { data: siteSettings } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("*").maybeSingle();
+      return data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2">
           <img src={logo} alt="UCOCSA" width={36} height={36} />
-          <span className="font-heading text-xl text-foreground">UCOCSA</span>
+          <div className="flex items-center gap-2">
+            <span className="font-heading text-xl text-foreground">UCOCSA</span>
+            {siteSettings && (
+              <span className={`hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest ${
+                siteSettings.is_open ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+              }`}>
+                {siteSettings.is_open ? 'In Session' : 'On Break'}
+              </span>
+            )}
+          </div>
         </Link>
 
         {/* Desktop */}

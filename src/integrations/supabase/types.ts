@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       announcements: {
@@ -47,11 +72,41 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "blog_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_comments: {
         Row: {
           content: string
           created_at: string
           id: string
+          parent_id: string | null
           post_id: string
           user_id: string
         }
@@ -59,6 +114,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          parent_id?: string | null
           post_id: string
           user_id: string
         }
@@ -66,15 +122,30 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          parent_id?: string | null
           post_id?: string
           user_id?: string
         }
         Relationships: [
           {
+            foreignKeyName: "blog_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "blog_comments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "blog_comments_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -163,6 +234,93 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      booking_requests: {
+        Row: {
+          consultation_format: string
+          created_at: string
+          email: string
+          farm_location: string | null
+          farm_size: string | null
+          full_name: string
+          id: string
+          issue_description: string | null
+          phone: string
+          primary_crops: string | null
+          service_type: string
+          status: string
+        }
+        Insert: {
+          consultation_format: string
+          created_at?: string
+          email: string
+          farm_location?: string | null
+          farm_size?: string | null
+          full_name: string
+          id?: string
+          issue_description?: string | null
+          phone: string
+          primary_crops?: string | null
+          service_type: string
+          status?: string
+        }
+        Update: {
+          consultation_format?: string
+          created_at?: string
+          email?: string
+          farm_location?: string | null
+          farm_size?: string | null
+          full_name?: string
+          id?: string
+          issue_description?: string | null
+          phone?: string
+          primary_crops?: string | null
+          service_type?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      contact_submissions: {
+        Row: {
+          created_at: string
+          email: string | null
+          farm_location: string | null
+          farm_size: string | null
+          full_name: string
+          id: string
+          message: string
+          phone: string
+          preferred_contact: string | null
+          primary_crops: string | null
+          referral_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          farm_location?: string | null
+          farm_size?: string | null
+          full_name: string
+          id?: string
+          message: string
+          phone: string
+          preferred_contact?: string | null
+          primary_crops?: string | null
+          referral_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          farm_location?: string | null
+          farm_size?: string | null
+          full_name?: string
+          id?: string
+          message?: string
+          phone?: string
+          preferred_contact?: string | null
+          primary_crops?: string | null
+          referral_source?: string | null
+        }
+        Relationships: []
       }
       conversation_participants: {
         Row: {
@@ -342,19 +500,19 @@ export type Database = {
       hymn_backgrounds: {
         Row: {
           created_at: string
-          id: string
+          id: number
           sort_order: number
           url: string
         }
         Insert: {
           created_at?: string
-          id?: string
+          id?: number
           sort_order?: number
           url: string
         }
         Update: {
           created_at?: string
-          id?: string
+          id?: number
           sort_order?: number
           url?: string
         }
@@ -381,7 +539,7 @@ export type Database = {
           category?: string | null
           created_at?: string
           first_line?: string | null
-          id?: number
+          id: number
           is_approved?: boolean
           submitted_by?: string | null
           title: string
@@ -473,6 +631,54 @@ export type Database = {
           },
         ]
       }
+      newsletter_signups: {
+        Row: {
+          created_at: string
+          crop_type: string | null
+          email: string
+          farm_location: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          crop_type?: string | null
+          email: string
+          farm_location?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          crop_type?: string | null
+          email?: string
+          farm_location?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      page_views: {
+        Row: {
+          created_at: string
+          id: string
+          path: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          path: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          path?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       praise_comments: {
         Row: {
           content: string
@@ -501,6 +707,13 @@ export type Database = {
             columns: ["praise_id"]
             isOneToOne: false
             referencedRelation: "praise_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "praise_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -562,6 +775,13 @@ export type Database = {
             referencedRelation: "prayer_requests"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "prayer_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       prayer_requests: {
@@ -604,26 +824,41 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          email: string | null
+          faculty: string | null
           full_name: string | null
           id: string
+          interests: string[] | null
+          phone: string | null
           role: string
           updated_at: string
+          year_of_study: number | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
+          faculty?: string | null
           full_name?: string | null
           id: string
+          interests?: string[] | null
+          phone?: string | null
           role?: string
           updated_at?: string
+          year_of_study?: number | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
+          faculty?: string | null
           full_name?: string | null
           id?: string
+          interests?: string[] | null
+          phone?: string | null
           role?: string
           updated_at?: string
+          year_of_study?: number | null
         }
         Relationships: []
       }
@@ -702,35 +937,65 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          closure_msg: string | null
+          id: string
+          is_open: boolean
+          opens_at: string | null
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          closure_msg?: string | null
+          id?: string
+          is_open?: boolean
+          opens_at?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          closure_msg?: string | null
+          id?: string
+          is_open?: boolean
+          opens_at?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           bio: string | null
-          created_at: string
+          created_at: string | null
           id: string
           image_url: string | null
           name: string
-          order_index: number
+          order_index: number | null
           role: string
+          updated_at: string | null
           whatsapp_number: string | null
         }
         Insert: {
           bio?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
           image_url?: string | null
           name: string
-          order_index?: number
+          order_index?: number | null
           role: string
+          updated_at?: string | null
           whatsapp_number?: string | null
         }
         Update: {
           bio?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
           image_url?: string | null
           name?: string
-          order_index?: number
+          order_index?: number | null
           role?: string
+          updated_at?: string | null
           whatsapp_number?: string | null
         }
         Relationships: []
@@ -764,6 +1029,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      search_users: {
+        Args: { search_term: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+        }[]
       }
     }
     Enums: {
@@ -893,6 +1166,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],

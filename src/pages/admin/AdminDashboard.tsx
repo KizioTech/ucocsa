@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { Calendar, Heart, Users, TrendingUp, Trash2, Info, ArrowUpRight, ArrowDownRight, Activity, FileText } from "lucide-react";
+import { Calendar, Heart, Users, TrendingUp, Trash2, Info, ArrowUpRight, ArrowDownRight, Activity, FileText, School, AlertCircle } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ConfirmAction } from "@/components/ConfirmAction";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   StatSparkline, 
@@ -28,6 +31,14 @@ const AdminDashboard = () => {
   });
   const [cleaning, setCleaning] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [savingStatus, setSavingStatus] = useState(false);
+
+  const [statusForm, setStatusForm] = useState({
+    is_open: true,
+    opens_at: "",
+    closure_msg: "",
+    timezone: "Africa/Blantyre"
+  });
 
   const fetchStats = async () => {
     setLoading(true);
@@ -42,7 +53,8 @@ const AdminDashboard = () => {
         pendingRes,
         historicalMembers,
         historicalPrayers,
-        pageViewsRes
+        pageViewsRes,
+        settingsRes
       ] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("events").select("id", { count: "exact", head: true }),
@@ -50,8 +62,18 @@ const AdminDashboard = () => {
         supabase.from("prayer_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("profiles").select("created_at").gte("created_at", sixMonthsAgo.toISOString()),
         supabase.from("prayer_requests").select("created_at, status").gte("created_at", sixMonthsAgo.toISOString()),
-        supabase.from("page_views").select("path")
+        supabase.from("page_views").select("path"),
+        supabase.from("site_settings").select("*").maybeSingle()
       ]);
+
+      if (settingsRes.data) {
+        setStatusForm({
+          is_open: settingsRes.data.is_open ?? true,
+          opens_at: settingsRes.data.opens_at || "",
+          closure_msg: settingsRes.data.closure_msg || "",
+          timezone: settingsRes.data.timezone || "Africa/Blantyre"
+        });
+      }
 
       // Process Activity Chart Data
       const activityData = [];
@@ -130,6 +152,27 @@ const AdminDashboard = () => {
       toast.error(err.message);
     } finally {
       setCleaning(false);
+    }
+  };
+
+  const handleSaveStatus = async () => {
+    setSavingStatus(true);
+    try {
+      const { error } = await supabase
+        .from("site_settings")
+        .upsert({
+          id: "00000000-0000-0000-0000-000000000000",
+          is_open: statusForm.is_open,
+          opens_at: statusForm.opens_at || null,
+          closure_msg: statusForm.closure_msg || null,
+          timezone: statusForm.timezone
+        });
+      if (error) throw error;
+      toast.success("School status updated successfully");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update school status");
+    } finally {
+      setSavingStatus(false);
     }
   };
 
@@ -214,6 +257,70 @@ const AdminDashboard = () => {
             </Button>
           </div>
         </div>
+
+        {/* School Status Settings */}
+        <Card className="border-border/50 border-l-4 border-l-amber-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <School size={18} className="text-amber-500" />
+              School Session Status
+            </CardTitle>
+            <CardDescription>
+              Toggle whether UCOCSA regular services are active (e.g. during semester breaks).
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border rounded-lg p-4 bg-muted/20">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">School is in session</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Turn off during semester breaks to hide weekly programs and show a closure notice.
+                    </p>
+                  </div>
+                  <Switch 
+                    checked={statusForm.is_open} 
+                    onCheckedChange={(c) => setStatusForm(prev => ({ ...prev, is_open: c }))} 
+                  />
+                </div>
+              </div>
+
+              {!statusForm.is_open && (
+                <div className="space-y-4 border rounded-lg p-4 bg-amber-500/5 border-amber-500/20">
+                  <div className="flex items-start gap-2 text-amber-600 dark:text-amber-400 mb-2">
+                    <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                    <p className="text-xs font-medium">The homepage will display a closure banner and hide regular services.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Reopening Date (Optional)</Label>
+                    <Input 
+                      type="date" 
+                      value={statusForm.opens_at} 
+                      onChange={(e) => setStatusForm(prev => ({ ...prev, opens_at: e.target.value }))} 
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Custom Banner Message (Optional)</Label>
+                    <Input 
+                      type="text" 
+                      placeholder="e.g. Regular services resume in October."
+                      value={statusForm.closure_msg} 
+                      onChange={(e) => setStatusForm(prev => ({ ...prev, closure_msg: e.target.value }))} 
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button size="sm" onClick={handleSaveStatus} disabled={savingStatus}>
+                {savingStatus ? "Saving..." : "Save Status"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

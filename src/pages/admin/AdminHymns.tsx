@@ -3,7 +3,7 @@ import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, Music, ChevronDown, ChevronUp, Check, Clock } from "lucide-react";
+import { FileText, Music, Play, Check, X, Search, Plus, Trash2, Edit2, Copy, FilePlus, Eye, AlertTriangle, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmAction } from "@/components/ConfirmAction";
 
@@ -125,15 +125,33 @@ const HymnForm = memo(({ isNew, editHymn, setEditHymn, onClose, onSave, saving }
                 <div key={idx} className="relative">
                   <div className="flex items-start gap-2">
                     <span className="text-xs font-semibold text-muted-foreground pt-2.5 w-14 shrink-0">Verse {idx + 1}</span>
-                    <textarea
-                      value={verse}
-                      onChange={e => updateVerse(idx, e.target.value)}
-                      rows={4}
-                      placeholder={`Type verse ${idx + 1} lyrics here. Use a blank line to separate the chorus.`}
-                      className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none font-mono leading-relaxed"
-                    />
+                    <div className="flex-1 space-y-1">
+                      <div className="flex justify-end mb-1">
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 text-[10px] px-2"
+                          onClick={() => updateVerse(idx, verse + (verse.length > 0 ? "\n\n" : "") + "    ")}
+                        >
+                          Insert Chorus Break
+                        </Button>
+                      </div>
+                      <textarea
+                        value={verse}
+                        onChange={e => updateVerse(idx, e.target.value)}
+                        rows={5}
+                        placeholder={`Type verse ${idx + 1} lyrics here.\n\nUse a blank line and indent with 4 spaces to denote a Chorus.`}
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none font-mono leading-relaxed"
+                      />
+                      {verse.split("\n").length > 12 && (
+                        <p className="text-[10px] text-amber-500 flex items-center gap-1">
+                          <AlertTriangle size={10} /> This verse is quite long. Consider splitting it.
+                        </p>
+                      )}
+                    </div>
                     {(editHymn.verses || []).length > 1 && (
-                      <button onClick={() => removeVerse(idx)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors mt-1">
+                      <button onClick={() => removeVerse(idx)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors mt-8">
                         <X size={14} />
                       </button>
                     )}
@@ -372,7 +390,7 @@ const AdminHymns = () => {
                               </button>
                             )}
                             <button onClick={() => openEdit(hymn)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-                              <Pencil size={14} />
+                              <Edit2 size={14} />
                             </button>
                             <ConfirmAction onConfirm={() => deleteMut.mutate(hymn.id)} description={`Delete "${hymn.title}"?`}>
                               <button className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">

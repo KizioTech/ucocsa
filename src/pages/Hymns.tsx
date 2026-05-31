@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
   Search, Heart, ArrowLeft, Music, Star, Book, Baby,
-  Sunrise, Shield, Flame, Info, X, Play, Pause, ChevronDown,
+  Sunrise, Shield, Flame, Info, X, Play, Pause, ChevronDown, Check,
   MonitorPlay, Type, Menu, BookOpen, Sparkles, Plus, Share2, Clipboard, Image as ImageIcon
 } from "lucide-react";
 import { backgroundImages } from "@/data/backgrounds";
@@ -370,7 +370,11 @@ const Hymns: React.FC = () => {
   const toggleFavorite = useCallback((id: number) => {
     setFavorites(prev => {
       const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
+      if (n.has(id)) {
+        n.delete(id);
+      } else {
+        n.add(id);
+      }
       return n;
     });
   }, []);
@@ -892,13 +896,18 @@ const Hymns: React.FC = () => {
                 className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <textarea
-              value={suggestForm.verses}
-              onChange={(e) => setSuggestForm({ ...suggestForm, verses: e.target.value })}
-              placeholder="Lyrics — separate each verse with a blank line *"
-              rows={8}
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary font-mono leading-relaxed resize-none"
-            />
+            <div className="space-y-1">
+              <textarea
+                value={suggestForm.verses}
+                onChange={(e) => setSuggestForm({ ...suggestForm, verses: e.target.value })}
+                placeholder="Lyrics — separate each verse with a blank line"
+                rows={8}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary font-mono leading-relaxed resize-none"
+              />
+              <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <Check size={10} className="text-primary" /> To add a Chorus, use a blank line and indent the block with 4 spaces.
+              </p>
+            </div>
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setSuggestOpen(false)}>Cancel</Button>
               <Button onClick={() => suggestMut.mutate()} disabled={suggestMut.isPending}>
