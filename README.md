@@ -463,7 +463,7 @@ This project is the property of the **University of Malawi Church of Christ Stud
 
 <div align="center">
 
-Built for the UCOCSA community · [ucocsa.vercel.app](https://ucocsa.vercel.app)
+UCOCSA community · [ucocsa.vercel.app](https://ucocsa.vercel.app)
 
 *"Let everything that has breath praise the Lord." — Psalm 150:6*
 
