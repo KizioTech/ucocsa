@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://ucocsa.vercel.app/favicon.png" alt="UCOCSA Logo" width="80" height="80" />
+<img src="https://ucocsa.online/favicon.png" alt="UCOCSA Logo" width="80" height="80" />
 
 # UCOCSA
 
@@ -8,7 +8,7 @@
 
 **A Christ-centered digital community platform for UNIMA students**
 
-[![Live Site](https://img.shields.io/badge/🌍_Live_Site-ucocsa.vercel.app-1F3A2E?style=for-the-badge)](https://ucocsa.vercel.app)
+[![Live Site](https://img.shields.io/badge/🌍_Live_Site-ucocsa.vercel.app-1F3A2E?style=for-the-badge)](https://ucocsa.online)
 [![Built with React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
@@ -463,7 +463,7 @@ This project is the property of the **University of Malawi Church of Christ Stud
 
 <div align="center">
 
-Built for the UCOCSA community · [ucocsa.vercel.app](https://ucocsa.vercel.app)
+Built for the UCOCSA community · [ucocsa.vercel.app](https://ucocsa.online)
 
 *"Let everything that has breath praise the Lord." — Psalm 150:6*
 

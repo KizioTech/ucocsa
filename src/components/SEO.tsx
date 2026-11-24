@@ -18,10 +18,10 @@ export default function SEO({
   description = "A Christ-centered community nurturing faith, academic excellence, and lifelong fellowship at the University of Malawi.", 
   name = "UCOCSA", 
   type = "website", 
-  image = "https://ucocsa.vercel.app/og-image.jpg",
+  image = "https://ucocsa.online/og-image.jpg",
   imageWidth = 1200,
   imageHeight = 630,
-  url = "https://ucocsa.vercel.app/",
+  url = "https://ucocsa.online/",
   keywords = "church of christ, Unima church of christ, church of christ malawi, COC, C.O.C., namikango mission, UCOCSA, UNIMA, University of Malawi, Christian, Student Fellowship, Chanco, College Fellowship, Christian Organization",
   schema
 }: SEOProps) {
