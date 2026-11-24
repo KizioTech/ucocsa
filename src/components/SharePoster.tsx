@@ -474,7 +474,7 @@ const SharePoster: React.FC<PosterProps> = ({
                     Join us for fellowship & growth
                   </p>
                   <p style={{ color: "#d4a853", fontSize: isExpanded ? "8.5px" : "9.5px", fontWeight: 700, letterSpacing: "0.06em" }}>
-                    www.ucocsa.vercel.app
+                    ucocsa.online
                   </p>
                 </div>
               </div>

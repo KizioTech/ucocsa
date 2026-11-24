@@ -70,7 +70,6 @@ const Messages = () => {
           filter: `conversation_id=eq.${activeConvo.id}`,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["messages", activeConvo.id] });
           fetchMessages(activeConvo.id);
         }
       )
